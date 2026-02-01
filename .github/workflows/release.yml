@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Create GitHub Release
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
+
+  # Build and Release Backend
+  release-backend:
+    runs-on: ubuntu-latest
+    needs: create-release
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Cache Maven dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+
+    - name: Build backend JAR
+      working-directory: ./backend
+      run: mvn clean package -DskipTests
+
+    - name: Upload backend JAR to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./backend/target/userauth-backend.jar
+        asset_name: userauth-backend-${{ github.ref_name }}.jar
+        asset_content_type: application/java-archive
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Build and push production image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./backend
+        file: ./backend/Dockerfile
+        push: true
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:${{ github.ref_name }}
+          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/backend:latest
+
+  # Build and Release Android
+  release-android:
+    runs-on: ubuntu-latest
+    needs: create-release
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Grant execute permission for gradlew
+      working-directory: ./android-app
+      run: chmod +x gradlew
+
+    - name: Build release APK
+      working-directory: ./android-app
+      run: ./gradlew assembleRelease
+
+    - name: Sign APK
+      working-directory: ./android-app
+      run: |
+        # Add APK signing logic here if needed
+        echo "APK signing would be configured here"
+
+    - name: Upload APK to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.create-release.outputs.upload_url }}
+        asset_path: ./android-app/app/build/outputs/apk/release/app-release.apk
+        asset_name: userauth-android-${{ github.ref_name }}.apk
+        asset_content_type: application/vnd.android.package-archive

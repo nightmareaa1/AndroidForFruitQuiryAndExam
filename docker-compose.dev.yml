@@ -1,0 +1,80 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: userauth-mysql-dev
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-StrongRootPass123!@#}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-userauth_dev}
+      MYSQL_USER: ${MYSQL_USER:-userauth}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-SecureDbPass456$%^}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - userauth-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: userauth-redis-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - userauth-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: userauth-backend-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-userauth_dev}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-userauth}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-SecureDbPass456$%^}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      JWT_SECRET: ${JWT_SECRET:-MySecureJwtKey789AbCdEfGhIjKlMnOpQrStUvWxYz012345}
+      SERVER_PORT: 8080
+    ports:
+      - "9080:8080"
+    volumes:
+      - ./backend:/app
+      - /app/target
+      - backend_uploads:/app/uploads
+    networks:
+      - userauth-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/api/actuator/health || exit 1"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+      interval: 30s
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_uploads:
+    driver: local
+
+networks:
+  userauth-network:
+    driver: bridge

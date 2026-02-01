@@ -1,0 +1,22 @@
+# Android App Signing Configuration Template
+# Copy this file to signing.properties and update with your keystore information
+# DO NOT commit signing.properties to version control
+
+# Keystore file path (relative to app module)
+storeFile=../keystore/release.keystore
+
+# Keystore password
+storePassword=your_keystore_password
+
+# Key alias
+keyAlias=your_key_alias
+
+# Key password
+keyPassword=your_key_password
+
+# Example configuration for CI/CD:
+# These can be set as environment variables in CI/CD pipeline
+# KEYSTORE_FILE=/path/to/keystore
+# KEYSTORE_PASSWORD=password
+# KEY_ALIAS=alias
+# KEY_PASSWORD=password

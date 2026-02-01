@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  mysql-test:
+    image: mysql:8.0
+    container_name: userauth-mysql-test
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-testroot}
+      MYSQL_DATABASE: ${MYSQL_TEST_DATABASE:-userauth_test}
+      MYSQL_USER: ${MYSQL_USER:-userauth}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    ports:
+      - "3307:3306"  # Different port to avoid conflicts with dev
+    volumes:
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+    networks:
+      - userauth-test-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  redis-test:
+    image: redis:7.0-alpine
+    container_name: userauth-redis-test
+    ports:
+      - "6380:6379"  # Different port to avoid conflicts with dev
+    networks:
+      - userauth-test-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 10s
+      retries: 5
+
+  backend-test:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: userauth-backend-test
+    environment:
+      SPRING_PROFILES_ACTIVE: test
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-test:3306/${MYSQL_TEST_DATABASE:-userauth_test}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-userauth}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-password}
+      SPRING_REDIS_HOST: redis-test
+      SPRING_REDIS_PORT: 6379
+      JWT_SECRET: test-secret-key-for-testing-only-32-characters-long
+      SERVER_PORT: 8080
+    ports:
+      - "9081:8080"  # Different port to avoid conflicts with dev
+    volumes:
+      - ./backend:/app
+      - /app/target
+    networks:
+      - userauth-test-network
+    depends_on:
+      mysql-test:
+        condition: service_healthy
+      redis-test:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+networks:
+  userauth-test-network:
+    driver: bridge

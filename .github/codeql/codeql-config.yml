@@ -1,0 +1,25 @@
+name: "CodeQL Config"
+
+# Specify which files to analyze
+paths:
+  - backend/src
+  - android-app/app/src
+
+# Specify which files to ignore
+paths-ignore:
+  - backend/src/test
+  - android-app/app/src/test
+  - android-app/app/src/androidTest
+  - "**/*.md"
+  - "**/*.txt"
+  - "**/*.xml"
+  - "**/*.yml"
+  - "**/*.yaml"
+
+# Specify additional queries to run
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
+
+# Disable default queries that may be too noisy
+disable-default-queries: false

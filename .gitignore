@@ -1,0 +1,157 @@
+# 用户认证系统 - Git忽略文件
+
+# ===== 通用 =====
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+.DS_Store
+Thumbs.db
+
+# ===== IDE =====
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# ===== Android =====
+# Gradle
+android-app/.gradle/
+android-app/build/
+android-app/app/build/
+android-app/local.properties
+
+# Android Studio
+android-app/.idea/
+android-app/*.iml
+android-app/.externalNativeBuild
+android-app/.cxx
+
+# Keystore files
+*.jks
+*.keystore
+
+# APK/AAB files
+*.apk
+*.aab
+
+# Signing files
+android-app/app/release/
+android-app/app/debug/
+
+# ===== Backend (Spring Boot) =====
+# Maven
+backend/target/
+backend/pom.xml.tag
+backend/pom.xml.releaseBackup
+backend/pom.xml.versionsBackup
+backend/pom.xml.next
+backend/release.properties
+backend/dependency-reduced-pom.xml
+backend/buildNumber.properties
+backend/.mvn/timing.properties
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+backend/.gradle/
+backend/build/
+backend/gradle-app.setting
+backend/!gradle-wrapper.jar
+backend/.gradletasknamecache
+
+# Spring Boot
+backend/spring-boot-*.log
+
+# ===== 数据库 =====
+# H2 Database
+*.db
+*.h2.db
+*.trace.db
+
+# MySQL dumps
+*.sql.gz
+backup-*.sql
+
+# ===== 配置文件 =====
+# 敏感配置（不要提交到Git）
+backend/src/main/resources/application-prod.yml
+backend/src/main/resources/application-local.yml
+android-app/app/src/main/res/values/secrets.xml
+
+# 环境变量
+.env
+.env.local
+.env.production
+
+# ===== 日志 =====
+logs/
+*.log.*
+
+# ===== 测试 =====
+# 测试报告
+backend/target/surefire-reports/
+backend/target/site/
+android-app/app/build/reports/
+android-app/app/build/test-results/
+
+# 覆盖率报告
+backend/target/jacoco/
+android-app/app/build/jacoco/
+
+# ===== 部署 =====
+# JAR/WAR files
+*.jar
+*.zip
+*.war
+*.ear
+!backend/.mvn/wrapper/maven-wrapper.jar
+!backend/gradle/wrapper/gradle-wrapper.jar
+
+# Docker
+docker-compose.override.yml
+
+# ===== 文档 =====
+# 生成的文档
+docs/api/generated/
+
+# ===== 脚本 =====
+# 备份文件
+scripts/backups/
+scripts/*.backup
+
+# ===== 临时文件 =====
+temp/
+tmp/
+*.cache
+
+# ===== 依赖 =====
+node_modules/
+vendor/
+
+# ===== 操作系统 =====
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~
+.directory
+.Trash-*

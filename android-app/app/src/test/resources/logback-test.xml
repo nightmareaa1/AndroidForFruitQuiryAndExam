@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender for test output -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger set to ERROR level to minimize output -->
+    <root level="ERROR">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+    <!-- Specific loggers for test frameworks -->
+    <logger name="org.junit" level="WARN" />
+    <logger name="io.mockk" level="WARN" />
+    <logger name="org.mockito" level="WARN" />
+    <logger name="okhttp3" level="ERROR" />
+    <logger name="retrofit2" level="ERROR" />
+    
+    <!-- Android specific loggers -->
+    <logger name="com.android" level="ERROR" />
+    <logger name="android" level="ERROR" />
+    
+    <!-- Application loggers - only show errors -->
+    <logger name="com.example.userauth" level="ERROR" />
+</configuration>

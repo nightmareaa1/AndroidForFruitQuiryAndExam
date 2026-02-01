@@ -1,0 +1,37 @@
+version: 2
+updates:
+  # Enable version updates for Maven (backend)
+  - package-ecosystem: "maven"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "backend-team"
+    assignees:
+      - "backend-team"
+
+  # Enable version updates for Gradle (Android)
+  - package-ecosystem: "gradle"
+    directory: "/android-app"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "android-team"
+    assignees:
+      - "android-team"
+
+  # Enable version updates for Docker
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # Enable version updates for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
