@@ -21,9 +21,10 @@ fun MainScreen(
     onLogout: () -> Unit,
     onNavigateToCompetition: () -> Unit = {},
     onNavigateToFruitNutrition: () -> Unit = {},
+    onNavigateToAdmin: () -> Unit = {},
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    val username = viewModel.getCurrentUsername() ?: "User"
+    val username = viewModel.getCurrentUsername() ?: "用户"
     val isAdmin = viewModel.isCurrentUserAdmin()
     
     Column(
@@ -35,7 +36,7 @@ fun MainScreen(
     ) {
         // Display current logged-in user's username (Requirement 5.6)
         Text(
-            text = "Welcome, $username!",
+            text = "欢迎，$username！",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -43,7 +44,7 @@ fun MainScreen(
         
         if (isAdmin) {
             Text(
-                text = "Administrator",
+                text = "管理员",
                 fontSize = 16.sp,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 32.dp)
@@ -69,6 +70,17 @@ fun MainScreen(
         ) {
             Text("水果营养查询")
         }
+        // Admin panel access (visible to admins only)
+        if (isAdmin) {
+            Button(
+                onClick = onNavigateToAdmin,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ) {
+                Text("管理员面板")
+            }
+        }
         
         OutlinedButton(
             onClick = {
@@ -77,7 +89,7 @@ fun MainScreen(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Logout")
+            Text("登出")
         }
     }
 }

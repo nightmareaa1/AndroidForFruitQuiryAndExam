@@ -6,7 +6,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.userauth.ui.screen.LoginScreen
+import com.example.userauth.ui.screen.AdminScreen
+import com.example.userauth.ui.screen.ModelManagementScreen
+import com.example.userauth.ui.screen.CompetitionManagementScreen
+import com.example.userauth.ui.screen.ScoreScreen
 import com.example.userauth.ui.screen.MainScreen
+import com.example.userauth.ui.screen.DataDisplayScreen
+import com.example.userauth.ui.screen.DataDisplayDetailScreen
+import com.example.userauth.viewmodel.DataDisplayViewModel
 import com.example.userauth.ui.screen.RegisterScreen
 import com.example.userauth.viewmodel.AuthViewModel
 
@@ -15,6 +22,9 @@ import com.example.userauth.viewmodel.AuthViewModel
  * Handles navigation between login, register, and main screens
  * Automatically navigates to main screen if user is already logged in
  */
+import androidx.compose.material3.ExperimentalMaterial3Api
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavGraph(navController: NavHostController) {
     val authViewModel: AuthViewModel = hiltViewModel()
@@ -68,8 +78,39 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onNavigateToFruitNutrition = {
                     navController.navigate(Screen.FruitNutrition.route)
+                },
+                onNavigateToAdmin = {
+                    navController.navigate(Screen.Admin.route)
                 }
             )
+        }
+        // Data display list and detail routes
+        composable(Screen.DataDisplay.route) {
+            DataDisplayScreen(onBack = { navController.popBackStack() }, onCardClick = { id -> navController.navigate(Screen.DataDisplayDetail.route.replace("{submissionId}", id)) }, viewModel = DataDisplayViewModel())
+        }
+        composable(Screen.DataDisplayDetail.route) { backStack ->
+            val id = backStack.arguments?.getString("submissionId") ?: return@composable
+            DataDisplayDetailScreen(submissionId = id, onBack = { navController.popBackStack() })
+        }
+        // Admin route
+        composable(Screen.Admin.route) {
+            AdminScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToModelManagement = { navController.navigate(Screen.ModelManagement.route) },
+                onNavigateToCompetitionManagement = { navController.navigate(Screen.CompetitionManagement.route) }
+            )
+        }
+        // Model management route (admin only)
+        composable(Screen.ModelManagement.route) {
+            ModelManagementScreen(onBack = { navController.popBackStack() })
+        }
+        // Score screen (评委评分)
+        composable(Screen.Score.route) {
+            ScoreScreen(onBack = { navController.popBackStack() })
+        }
+        // Competition management route (admin only)
+        composable(Screen.CompetitionManagement.route) {
+            CompetitionManagementScreen(onBack = { navController.popBackStack() })
         }
         
         // TODO: Add more navigation destinations for other features

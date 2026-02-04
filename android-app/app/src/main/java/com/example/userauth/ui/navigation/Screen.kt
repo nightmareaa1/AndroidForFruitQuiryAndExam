@@ -1,8 +1,5 @@
 package com.example.userauth.ui.navigation
 
-/**
- * Sealed class representing different screens in the app
- */
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
@@ -10,6 +7,10 @@ sealed class Screen(val route: String) {
     object Admin : Screen("admin")
     object Competition : Screen("competition")
     object FruitNutrition : Screen("fruit_nutrition")
-    
-    // TODO: Add more screen destinations as needed
+    object ModelManagement : Screen("model_management")
+    object CompetitionManagement : Screen("competition_management")
+    object Score : Screen("score")
+    object RadarDetail : Screen("radar_detail/{submissionId}")
+    object DataDisplayDetail : Screen("data-display-detail/{submissionId}")
+    object DataDisplay : Screen("data-display")
 }
