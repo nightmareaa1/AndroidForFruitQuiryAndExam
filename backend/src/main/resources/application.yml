@@ -2,10 +2,10 @@
 spring:
   application:
     name: userauth-backend
-  
+
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
-  
+
   # Database Configuration
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/userauth}
@@ -18,7 +18,7 @@ spring:
       idle-timeout: 300000
       connection-timeout: 20000
       leak-detection-threshold: 60000
-  
+
   # JPA Configuration
   jpa:
     hibernate:
@@ -30,7 +30,7 @@ spring:
         format_sql: true
         use_sql_comments: true
     open-in-view: false
-  
+
   # Redis Configuration
   data:
     redis:
@@ -42,20 +42,20 @@ spring:
           max-active: 8
           max-idle: 8
           min-idle: 0
-  
+
   # Flyway Configuration
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
     validate-on-migrate: true
-  
+
   # File Upload Configuration
   servlet:
     multipart:
       max-file-size: ${MAX_FILE_SIZE:10MB}
       max-request-size: ${MAX_REQUEST_SIZE:10MB}
-  
+
   # Security Configuration
   security:
     user:
@@ -72,29 +72,58 @@ server:
     include-message: always
     include-binding-errors: always
 
-# Management/Actuator Configuration
+# Management/Actuator Configuration (unified)
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include: health,info,metrics,prometheus,env,beans,configprops,loggers,threaddump,heapdump,healthcaches
       base-path: /actuator
   endpoint:
     health:
       show-details: when-authorized
+      show-components: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+    loggers:
+      enabled: true
   health:
     redis:
       enabled: true
     db:
       enabled: true
+    diskspace:
+      enabled: true
+    custom:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+      environment: ${SPRING_PROFILES_ACTIVE:dev}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      slo:
+        http.server.requests: 100ms,200ms,500ms,1s,2s
+    export:
+      prometheus:
+        enabled: true
+        descriptions: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+        descriptions: true
 
 # Application Specific Configuration
 app:
   jwt:
     secret: ${JWT_SECRET:default-secret-key-change-in-production-must-be-at-least-32-characters-long}
-    expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
-    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000} # 7 days in milliseconds
-  
+    expiration: ${JWT_EXPIRATION:86400000}
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
   security:
     bcrypt-strength: ${BCRYPT_STRENGTH:12}
     key-rotation:
@@ -107,12 +136,12 @@ app:
       require-lowercase: ${PASSWORD_REQUIRE_LOWERCASE:true}
       require-digit: ${PASSWORD_REQUIRE_DIGIT:true}
       require-special: ${PASSWORD_REQUIRE_SPECIAL:false}
-  
+
   file:
     upload-dir: ${UPLOAD_PATH:./uploads}
     max-size: ${MAX_FILE_SIZE:10MB}
     allowed-types: jpg,jpeg,png,webp
-  
+
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000}
     allowed-methods: GET,POST,PUT,DELETE,OPTIONS
@@ -128,8 +157,17 @@ logging:
     org.springframework.web: ${LOGGING_LEVEL_WEB:INFO}
     org.hibernate.SQL: ${LOGGING_LEVEL_SQL:WARN}
     org.hibernate.type.descriptor.sql.BasicBinder: ${LOGGING_LEVEL_SQL_PARAMS:WARN}
+  file:
+    name: ${LOG_FILE:logs/userauth-backend.log}
+    path: ${LOG_PATH:logs}
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file:
-    name: ${LOG_FILE:logs/userauth-backend.log}
+  structure:
+    enabled: ${LOG_STRUCTURED_FORMAT:false}
+    include-application-name: true
+    include-environment: true
+    include-profile: true
+  security:
+    mask-sensitive-data: ${MASK_SENSITIVE_DATA:true}
+    mask-fields: password,passwd,pwd,secret,token,api_key,apikey,access_key,credit_card,ssn,bank_account

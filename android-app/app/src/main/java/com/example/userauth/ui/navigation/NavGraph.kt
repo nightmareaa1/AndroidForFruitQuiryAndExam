@@ -10,6 +10,8 @@ import com.example.userauth.ui.screen.AdminScreen
 import com.example.userauth.ui.screen.ModelManagementScreen
 import com.example.userauth.ui.screen.CompetitionManagementScreen
 import com.example.userauth.ui.screen.ScoreScreen
+import com.example.userauth.ui.screen.FruitNutritionScreen
+import com.example.userauth.viewmodel.FruitNutritionViewModel
 import com.example.userauth.ui.screen.MainScreen
 import com.example.userauth.ui.screen.DataDisplayScreen
 import com.example.userauth.ui.screen.DataDisplayDetailScreen
@@ -107,6 +109,14 @@ fun NavGraph(navController: NavHostController) {
         // Score screen (评委评分)
         composable(Screen.Score.route) {
             ScoreScreen(onBack = { navController.popBackStack() })
+        }
+        // Fruit Nutrition screen
+        composable(Screen.FruitNutrition.route) {
+            FruitNutritionScreen(
+                onBack = { navController.popBackStack() },
+                onFruitClick = { /* optional: navigate to detail in future */ },
+                viewModel = FruitNutritionViewModel()
+            )
         }
         // Competition management route (admin only)
         composable(Screen.CompetitionManagement.route) {

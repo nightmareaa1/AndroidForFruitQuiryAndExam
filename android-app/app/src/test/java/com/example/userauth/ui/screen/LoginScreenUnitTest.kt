@@ -11,6 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -93,7 +95,7 @@ class LoginScreenUnitTest {
         }
 
         // Then - verify UI elements are displayed
-        composeTestRule.onNodeWithText("Sign In").assertExists()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).assertExists()
         composeTestRule.onNodeWithText("Username").assertExists()
         composeTestRule.onNodeWithText("Password").assertExists()
         composeTestRule.onNodeWithText("Don't have an account? Sign up").assertExists()
@@ -132,7 +134,7 @@ class LoginScreenUnitTest {
         // When - fill fields and click login
         composeTestRule.onNodeWithText("Username").performTextInput("testuser")
         composeTestRule.onNodeWithText("Password").performTextInput("testpassword")
-        composeTestRule.onNodeWithText("Sign In").performClick()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).performClick()
 
         // Then - verify ViewModel login method is called
         assert(testViewModel.lastLoginUsername == "testuser")

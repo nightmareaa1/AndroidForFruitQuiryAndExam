@@ -10,7 +10,7 @@ class ModelViewModelTest {
         val vm = ModelViewModel()
         val first = vm.models.value.firstOrNull()
         assertNotNull(first)
-        assertEquals(" Mango Model", first?.name)
+        assertEquals("Mango Model", first?.name)
     }
 
     @Test

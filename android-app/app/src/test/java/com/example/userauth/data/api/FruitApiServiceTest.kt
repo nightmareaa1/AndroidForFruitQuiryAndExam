@@ -75,7 +75,7 @@ class FruitApiServiceTest {
         assertEquals("nutrition", fruitResponse.type)
         assertEquals(2, fruitResponse.data.size)
         assertEquals("Calories", fruitResponse.data[0].componentName)
-        assertEquals(60.0, fruitResponse.data[0].value)
+        assertEquals(60.0, fruitResponse.data[0].value, 0.01)
 
         val recordedRequest = mockWebServer.takeRequest()
         assertEquals("GET", recordedRequest.method)

@@ -114,6 +114,8 @@ class PreferencesManagerTest {
 
     @Test
     fun `clearAll should clear all stored data`() {
+        whenever(editor.clear()).thenReturn(editor)
+        
         preferencesManager.clearAll()
 
         verify(editor).clear()

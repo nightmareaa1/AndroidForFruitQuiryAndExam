@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -224,7 +225,7 @@ class LoginScreenTest {
         }
 
         // Then - verify UI elements are displayed
-        composeTestRule.onNodeWithText("Sign In").assertIsDisplayed()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).assertIsDisplayed()
         composeTestRule.onNodeWithText("Username").assertIsDisplayed()
         composeTestRule.onNodeWithText("Password").assertIsDisplayed()
         composeTestRule.onNodeWithText("Don't have an account? Sign up").assertIsDisplayed()
@@ -282,7 +283,7 @@ class LoginScreenTest {
         }
 
         // Then - login button should be disabled when fields are empty
-        composeTestRule.onNodeWithText("Sign In").assertIsNotEnabled()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).assertIsNotEnabled()
     }
 
     @Test
@@ -301,7 +302,7 @@ class LoginScreenTest {
         composeTestRule.onNodeWithText("Password").performTextInput("testpassword")
 
         // Then - login button should be enabled
-        composeTestRule.onNodeWithText("Sign In").assertIsEnabled()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).assertIsEnabled()
     }
 
     @Test
@@ -318,7 +319,7 @@ class LoginScreenTest {
         // When - fill fields and click login
         composeTestRule.onNodeWithText("Username").performTextInput("testuser")
         composeTestRule.onNodeWithText("Password").performTextInput("testpassword")
-        composeTestRule.onNodeWithText("Sign In").performClick()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).performClick()
 
         // Then - verify ViewModel login method is called
         assert(testViewModel.lastLoginUsername == "testuser")
@@ -329,7 +330,7 @@ class LoginScreenTest {
     fun loginScreen_showsLoadingIndicatorWhenLoading() {
         // Given - loading state
         testViewModel.setLoginState(LoginState(isLoading = true))
-        
+
         composeTestRule.setContent {
             TestLoginScreen(
                 onNavigateToRegister = { navigateToRegisterCalled = true },
@@ -338,12 +339,15 @@ class LoginScreenTest {
             )
         }
 
-        // When - fill fields (button should still be disabled during loading)
-        composeTestRule.onNodeWithText("Username").performTextInput("testuser")
-        composeTestRule.onNodeWithText("Password").performTextInput("testpassword")
+        // Wait for UI to settle
+        composeTestRule.waitForIdle()
 
         // Then - button should be disabled during loading (loading indicator is inside button)
-        composeTestRule.onNodeWithText("Sign In").assertIsNotEnabled()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).assertIsNotEnabled()
+
+        // And - input fields should be disabled during loading
+        composeTestRule.onNodeWithText("Username").assertIsNotEnabled()
+        composeTestRule.onNodeWithText("Password").assertIsNotEnabled()
     }
 
     @Test
@@ -453,10 +457,7 @@ class LoginScreenTest {
 
     @Test
     fun loginScreen_handlesAuthenticationError() {
-        // Given - authentication error state
-        val authError = "Invalid credentials"
-        testViewModel.setLoginState(LoginState(error = authError))
-        
+        // Given
         composeTestRule.setContent {
             TestLoginScreen(
                 onNavigateToRegister = { navigateToRegisterCalled = true },
@@ -465,12 +466,19 @@ class LoginScreenTest {
             )
         }
 
+        // When - authentication error state is set
+        val authError = "Invalid credentials"
+        testViewModel.setLoginState(LoginState(error = authError))
+
+        // Wait for UI to update
+        composeTestRule.waitForIdle()
+
         // Then - authentication error should be displayed
         composeTestRule.onNodeWithText(authError).assertIsDisplayed()
-        
-        // And - user should be able to retry
+
+        // And - user should be able to retry (fields and button should be enabled)
         composeTestRule.onNodeWithText("Username").assertIsEnabled()
         composeTestRule.onNodeWithText("Password").assertIsEnabled()
-        composeTestRule.onNodeWithText("Sign In").assertIsEnabled()
+        composeTestRule.onNode(hasText("Sign In") and hasClickAction()).assertIsEnabled()
     }
 }
