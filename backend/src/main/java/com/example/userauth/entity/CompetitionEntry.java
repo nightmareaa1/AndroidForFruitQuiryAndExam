@@ -32,6 +32,10 @@ public class CompetitionEntry {
     @Column(name = "status", nullable = false, length = 20)
     private EntryStatus status = EntryStatus.PENDING;
     
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "contestant_id")
+    private User contestant;
+    
     @OneToMany(mappedBy = "entry", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CompetitionRating> ratings;
     
@@ -121,6 +125,18 @@ public class CompetitionEntry {
     
     public void setStatus(EntryStatus status) {
         this.status = status;
+    }
+    
+    public User getContestant() {
+        return contestant;
+    }
+    
+    public void setContestant(User contestant) {
+        this.contestant = contestant;
+    }
+    
+    public String getContestantName() {
+        return contestant != null ? contestant.getUsername() : "未知参赛者";
     }
     
     public List<CompetitionRating> getRatings() {

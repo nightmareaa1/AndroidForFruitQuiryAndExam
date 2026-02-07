@@ -4,6 +4,7 @@ import java.util.List;
 
 /**
  * Response DTO for competition rating data display
+ * Matches Android EntryRatingDataDto structure
  */
 public class CompetitionRatingDataResponse {
     
@@ -48,32 +49,29 @@ public class CompetitionRatingDataResponse {
     
     /**
      * Rating data for a single entry
+     * Field names match Android EntryRatingDataDto
      */
     public static class EntryRatingData {
         private Long entryId;
         private String entryName;
-        private String description;
-        private String filePath;
-        private List<ParameterAverageScore> parameterAverages;
-        private Double totalAverageScore;
-        private Integer totalJudges;
-        private Integer completedRatings;
+        private String contestantName;
+        private Double averageTotalScore;
+        private Integer numberOfRatings;
+        private List<ParameterAverageScore> parameterScores;
         
         // Default constructor
         public EntryRatingData() {}
         
         // Constructor
-        public EntryRatingData(Long entryId, String entryName, String description, String filePath,
-                              List<ParameterAverageScore> parameterAverages, Double totalAverageScore,
-                              Integer totalJudges, Integer completedRatings) {
+        public EntryRatingData(Long entryId, String entryName, String contestantName,
+                              Double averageTotalScore, Integer numberOfRatings,
+                              List<ParameterAverageScore> parameterScores) {
             this.entryId = entryId;
             this.entryName = entryName;
-            this.description = description;
-            this.filePath = filePath;
-            this.parameterAverages = parameterAverages;
-            this.totalAverageScore = totalAverageScore;
-            this.totalJudges = totalJudges;
-            this.completedRatings = completedRatings;
+            this.contestantName = contestantName;
+            this.averageTotalScore = averageTotalScore;
+            this.numberOfRatings = numberOfRatings;
+            this.parameterScores = parameterScores;
         }
         
         // Getters and setters
@@ -93,75 +91,60 @@ public class CompetitionRatingDataResponse {
             this.entryName = entryName;
         }
         
-        public String getDescription() {
-            return description;
+        public String getContestantName() {
+            return contestantName;
         }
         
-        public void setDescription(String description) {
-            this.description = description;
+        public void setContestantName(String contestantName) {
+            this.contestantName = contestantName;
         }
         
-        public String getFilePath() {
-            return filePath;
+        public Double getAverageTotalScore() {
+            return averageTotalScore;
         }
         
-        public void setFilePath(String filePath) {
-            this.filePath = filePath;
+        public void setAverageTotalScore(Double averageTotalScore) {
+            this.averageTotalScore = averageTotalScore;
         }
         
-        public List<ParameterAverageScore> getParameterAverages() {
-            return parameterAverages;
+        public Integer getNumberOfRatings() {
+            return numberOfRatings;
         }
         
-        public void setParameterAverages(List<ParameterAverageScore> parameterAverages) {
-            this.parameterAverages = parameterAverages;
+        public void setNumberOfRatings(Integer numberOfRatings) {
+            this.numberOfRatings = numberOfRatings;
         }
         
-        public Double getTotalAverageScore() {
-            return totalAverageScore;
+        public List<ParameterAverageScore> getParameterScores() {
+            return parameterScores;
         }
         
-        public void setTotalAverageScore(Double totalAverageScore) {
-            this.totalAverageScore = totalAverageScore;
-        }
-        
-        public Integer getTotalJudges() {
-            return totalJudges;
-        }
-        
-        public void setTotalJudges(Integer totalJudges) {
-            this.totalJudges = totalJudges;
-        }
-        
-        public Integer getCompletedRatings() {
-            return completedRatings;
-        }
-        
-        public void setCompletedRatings(Integer completedRatings) {
-            this.completedRatings = completedRatings;
+        public void setParameterScores(List<ParameterAverageScore> parameterScores) {
+            this.parameterScores = parameterScores;
         }
     }
     
     /**
      * Average score for a parameter
+     * Field names match Android ParameterAverageScoreDto
      */
     public static class ParameterAverageScore {
         private Long parameterId;
         private String parameterName;
-        private Integer parameterWeight;
         private Double averageScore;
+        private Integer weight;
         private Integer ratingCount;
         
         // Default constructor
         public ParameterAverageScore() {}
         
         // Constructor
-        public ParameterAverageScore(Long parameterId, String parameterName, Integer parameterWeight,
-                                   Double averageScore, Integer ratingCount) {
+        public ParameterAverageScore(Long parameterId, String parameterName, Double averageScore,
+                                   Integer weight, Integer ratingCount) {
             this.parameterId = parameterId;
             this.parameterName = parameterName;
-            this.parameterWeight = parameterWeight;
             this.averageScore = averageScore;
+            this.weight = weight;
             this.ratingCount = ratingCount;
         }
         
@@ -182,20 +165,20 @@ public class CompetitionRatingDataResponse {
             this.parameterName = parameterName;
         }
         
-        public Integer getParameterWeight() {
-            return parameterWeight;
-        }
-        
-        public void setParameterWeight(Integer parameterWeight) {
-            this.parameterWeight = parameterWeight;
-        }
-        
         public Double getAverageScore() {
             return averageScore;
         }
         
         public void setAverageScore(Double averageScore) {
             this.averageScore = averageScore;
+        }
+        
+        public Integer getWeight() {
+            return weight;
+        }
+        
+        public void setWeight(Integer weight) {
+            this.weight = weight;
         }
         
         public Integer getRatingCount() {

@@ -2,18 +2,24 @@ package com.example.userauth.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.userauth.data.model.SubmissionScore
 import com.example.userauth.data.model.ScoreParameter
-import com.example.userauth.data.api.EvaluationApiService
+import com.example.userauth.data.repository.RatingRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Simple data-display view model that derives aggregates from ScoreViewModel data
+/**
+ * ViewModel for data display screen
+ * Loads and displays competition rating data including entry scores and averages
+ */
+@HiltViewModel
 class DataDisplayViewModel @Inject constructor(
-    private val evaluationApiService: EvaluationApiService
+    private val ratingRepository: RatingRepository
 ) : ViewModel() {
     private val _submissions = MutableStateFlow<List<SubmissionScore>>(emptyList())
     val submissions: StateFlow<List<SubmissionScore>> = _submissions.asStateFlow()
@@ -21,25 +27,60 @@ class DataDisplayViewModel @Inject constructor(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
+    private var currentCompetitionId: Long = 0
+
     init {
-        // Initialize with placeholder data
         _submissions.value = emptyList()
     }
 
     /**
-     * Load submissions for data display
+     * Load rating data for a specific competition
+     * @param competitionId The ID of the competition to load data for
      */
-    fun loadSubmissions() {
+    fun loadSubmissions(competitionId: Long) {
+        currentCompetitionId = competitionId
         viewModelScope.launch {
             _isLoading.value = true
+            _error.value = null
             try {
-                // TODO: Load actual data from API when endpoints are available
-                _submissions.value = emptyList()
+                val result = ratingRepository.getCompetitionRatingData(competitionId)
+                result.onSuccess { ratingData ->
+                    _submissions.value = ratingData.entries.map { entry ->
+                        SubmissionScore(
+                            id = entry.entryId.toString(),
+                            contestant = entry.contestantName,
+                            title = entry.entryName,
+                            scores = entry.parameterScores.map { param ->
+                                ScoreParameter(
+                                    name = param.parameterName,
+                                    max = param.weight,
+                                    score = param.averageScore.toInt()
+                                )
+                            }.toMutableList()
+                        )
+                    }
+                }.onFailure { exception ->
+                    _error.value = exception.message ?: "Failed to load rating data"
+                    _submissions.value = emptyList()
+                }
             } catch (e: Exception) {
+                _error.value = e.message ?: "An error occurred"
                 _submissions.value = emptyList()
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    /**
+     * Refresh data for the current competition
+     */
+    fun refresh() {
+        if (currentCompetitionId > 0) {
+            loadSubmissions(currentCompetitionId)
         }
     }
 

@@ -3,7 +3,10 @@ package com.example.userauth.data.repository
 import com.example.userauth.data.api.CompetitionApi
 import com.example.userauth.data.api.dto.CompetitionDto
 import com.example.userauth.data.api.dto.CompetitionRequest
+import com.example.userauth.data.api.dto.EntryRequestDto
+import com.example.userauth.data.api.dto.EntrySubmitResponseDto
 import com.example.userauth.data.model.Competition
+import okhttp3.MediaType.Companion.toMediaType
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -104,6 +107,42 @@ class CompetitionRepository @Inject constructor(
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("Failed to delete competition: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Submit entry to competition
+     */
+    suspend fun submitEntry(competitionId: Long, entryName: String, description: String?, imageUri: String?): Result<EntrySubmitResponseDto> {
+        return try {
+            val request = EntryRequestDto(
+                entryName = entryName,
+                description = description
+            )
+            
+            // Convert image URI to multipart if provided
+            val filePart = imageUri?.let { uri ->
+                val imageFile = java.io.File(uri)
+                if (imageFile.exists()) {
+                    okhttp3.MultipartBody.Part.createFormData(
+                        "file",
+                        imageFile.name,
+                        okhttp3.RequestBody.create("image/*".toMediaType(), imageFile)
+                    )
+                } else null
+            }
+            
+            val response = api.submitEntry(competitionId, request, filePart)
+            
+            if (response.isSuccessful) {
+                response.body()?.let {
+                    Result.success(it)
+                } ?: Result.failure(Exception("Empty response"))
+            } else {
+                Result.failure(Exception("Failed to submit entry: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

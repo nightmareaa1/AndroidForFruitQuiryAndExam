@@ -42,27 +42,20 @@ public class CompetitionService {
     private FileStorageService fileStorageService;
     
     /**
-     * Get all competitions (for admin) or competitions where user is creator/judge
+     * Get all competitions
+     * All authenticated users can view all competitions for evaluation display
+     * Admin sees all competitions with full details
+     * Regular users can view all competitions to browse and evaluate
      */
     @Transactional(readOnly = true)
     public List<CompetitionResponse> getAllCompetitions(Long userId, boolean isAdmin) {
         logger.info("Fetching competitions for user: {}, isAdmin: {}", userId, isAdmin);
         
-        List<Competition> competitions;
-        if (isAdmin) {
-            competitions = competitionRepository.findAll();
-        } else {
-            // Get competitions where user is creator or judge
-            List<Competition> createdCompetitions = competitionRepository.findByCreatorIdOrderByCreatedAtDesc(userId);
-            List<Competition> judgedCompetitions = competitionRepository.findByJudgeIdOrderByCreatedAtDesc(userId);
-            
-            // Combine and deduplicate
-            competitions = createdCompetitions;
-            judgedCompetitions.stream()
-                    .filter(c -> !createdCompetitions.contains(c))
-                    .forEach(competitions::add);
-        }
+        // All authenticated users can view all competitions
+        // This enables regular users to browse competitions and view scores
+        List<Competition> competitions = competitionRepository.findAll();
         
+        logger.info("Returning {} competitions for user: {}", competitions.size(), userId);
         return competitions.stream()
                 .map(this::convertToResponse)
                 .toList();
@@ -341,6 +334,7 @@ public class CompetitionService {
                                 e.getFilePath(),
                                 e.getDisplayOrder(),
                                 e.getStatus().name(),
+                                e.getContestant() != null ? e.getContestant().getUsername() : null,
                                 e.getCreatedAt(),
                                 e.getUpdatedAt()
                         ))
@@ -362,5 +356,56 @@ public class CompetitionService {
                 competition.getCreatedAt(),
                 competition.getUpdatedAt()
         );
+    }
+    
+    /**
+     * Submit a single entry to competition with optional file upload
+     * Any authenticated user can submit their own entry
+     */
+    public Long submitEntryToCompetition(Long competitionId, EntryRequest request, MultipartFile file, Long userId) {
+        logger.info("User {} submitting entry to competition {}", userId, competitionId);
+        
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(() -> new IllegalArgumentException("赛事不存在: " + competitionId));
+        
+        // Check if deadline has passed
+        if (competition.isDeadlinePassed()) {
+            throw new IllegalArgumentException("赛事截止时间已过，无法提交参赛作品");
+        }
+        
+        // Get user (contestant)
+        User contestant = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("用户不存在: " + userId));
+        
+        // Get next display order
+        Integer maxDisplayOrder = entryRepository.findMaxDisplayOrderByCompetitionId(competitionId);
+        int nextDisplayOrder = (maxDisplayOrder != null ? maxDisplayOrder : 0) + 1;
+        
+        // Handle file upload
+        String filePath = null;
+        if (file != null && !file.isEmpty()) {
+            try {
+                filePath = fileStorageService.storeFile(file);
+            } catch (java.io.IOException e) {
+                logger.error("Failed to store file for entry: {}", request.getEntryName(), e);
+                throw new RuntimeException("文件上传失败: " + e.getMessage(), e);
+            }
+        }
+        
+        // Create entry with contestant
+        CompetitionEntry entry = new CompetitionEntry(
+                competition,
+                request.getEntryName(),
+                request.getDescription(),
+                filePath,
+                nextDisplayOrder
+        );
+        entry.setContestant(contestant);
+        entry.setStatus(CompetitionEntry.EntryStatus.PENDING);
+        
+        entry = entryRepository.save(entry);
+        
+        logger.info("User {} submitted entry {} to competition {}", userId, entry.getId(), competitionId);
+        return entry.getId();
     }
 }

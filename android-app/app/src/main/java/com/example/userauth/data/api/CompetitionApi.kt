@@ -6,6 +6,8 @@ import retrofit2.http.PUT
 import retrofit2.http.DELETE
 import retrofit2.http.Path
 import retrofit2.http.Body
+import retrofit2.http.Multipart
+import retrofit2.http.Part
 import retrofit2.Response
 import com.example.userauth.data.api.dto.*
 
@@ -27,4 +29,16 @@ interface CompetitionApi {
     
     @DELETE("competitions/{id}")
     suspend fun deleteCompetition(@Path("id") id: Long): Response<Void>
+    
+    /**
+     * Submit entry to competition with optional file upload
+     * POST /api/competitions/{id}/submit
+     */
+    @Multipart
+    @POST("competitions/{id}/submit")
+    suspend fun submitEntry(
+        @Path("id") competitionId: Long,
+        @Part("entry") request: EntryRequestDto,
+        @Part file: okhttp3.MultipartBody.Part?
+    ): Response<EntrySubmitResponseDto>
 }

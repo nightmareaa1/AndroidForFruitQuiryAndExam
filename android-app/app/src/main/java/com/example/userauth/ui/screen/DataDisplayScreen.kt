@@ -16,12 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.userauth.viewmodel.DataDisplayViewModel
 import com.example.userauth.data.model.SubmissionScore
 
 @Composable
-fun DataDisplayScreen(onBack: () -> Unit, onCardClick: (String) -> Unit, viewModel: DataDisplayViewModel = viewModel()) {
+fun DataDisplayScreen(onBack: () -> Unit, onCardClick: (String) -> Unit, viewModel: DataDisplayViewModel = hiltViewModel()) {
     val submissions by viewModel.submissions.collectAsState()
     LazyColumn(modifier = Modifier.fillMaxWidth()) {
         items(submissions) { sub: SubmissionScore ->

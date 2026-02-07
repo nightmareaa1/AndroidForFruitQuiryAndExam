@@ -3,6 +3,7 @@ package com.example.userauth.controller;
 import com.example.userauth.dto.CompetitionRequest;
 import com.example.userauth.dto.CompetitionResponse;
 import com.example.userauth.dto.EntryRequest;
+import com.example.userauth.dto.EntrySubmitResponse;
 import com.example.userauth.entity.User;
 import com.example.userauth.repository.UserRepository;
 import com.example.userauth.security.RequireAdmin;
@@ -269,6 +270,32 @@ public class CompetitionController {
         } catch (Exception e) {
             logger.error("Error adding entries to competition with id: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Submit entry to competition with optional file upload
+     * Any authenticated user can submit their entry
+     */
+    @PostMapping("/{id}/submit")
+    public ResponseEntity<?> submitEntry(@PathVariable Long id,
+                                        @RequestPart("entry") @Valid EntryRequest request,
+                                        @RequestPart(value = "file", required = false) MultipartFile file) {
+        logger.info("POST /api/competitions/{}/submit - User submitting entry: {}", id, request.getEntryName());
+        
+        try {
+            User currentUser = getCurrentUser();
+            Long entryId = competitionService.submitEntryToCompetition(id, request, file, currentUser.getId());
+            
+            logger.info("Successfully submitted entry {} to competition {}", entryId, id);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new EntrySubmitResponse(entryId, "参赛作品提交成功"));
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid request for submitting entry to competition {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error submitting entry to competition with id: {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("提交失败，请稍后重试"));
         }
     }
     

@@ -43,9 +43,8 @@ public class RatingDataService {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new IllegalArgumentException("赛事不存在"));
         
-        // Get all approved entries for the competition
-        List<CompetitionEntry> entries = entryRepository
-                .findByCompetitionIdAndStatusOrderByDisplayOrder(competitionId, CompetitionEntry.EntryStatus.APPROVED);
+        // Get all entries for the competition regardless of status
+        List<CompetitionEntry> entries = entryRepository.findByCompetitionIdOrderByDisplayOrder(competitionId);
         
         // Get total number of judges for this competition
         long totalJudges = judgeRepository.countByCompetitionId(competitionId);
@@ -71,7 +70,7 @@ public class RatingDataService {
         // Get detailed average scores for this entry
         List<Object[]> averageScores = ratingRepository.findDetailedAverageScoresByEntryId(entry.getId());
         
-        List<CompetitionRatingDataResponse.ParameterAverageScore> parameterAverages = new ArrayList<>();
+        List<CompetitionRatingDataResponse.ParameterAverageScore> parameterScores = new ArrayList<>();
         double totalWeightedScore = 0.0;
         int totalWeight = 0;
         int completedRatings = 0;
@@ -85,33 +84,31 @@ public class RatingDataService {
             
             CompetitionRatingDataResponse.ParameterAverageScore parameterAverage = 
                 new CompetitionRatingDataResponse.ParameterAverageScore(
-                    parameterId, parameterName, parameterWeight, averageScore, ratingCount.intValue()
+                    parameterId, parameterName, averageScore, parameterWeight, ratingCount.intValue()
                 );
             
-            parameterAverages.add(parameterAverage);
+            parameterScores.add(parameterAverage);
             
             // Calculate weighted score for total average
             totalWeightedScore += averageScore;
             totalWeight += parameterWeight;
             
-            // Count completed ratings (assuming all parameters should have same number of ratings)
+            // Count completed ratings
             if (completedRatings == 0) {
                 completedRatings = ratingCount.intValue();
             }
         }
         
         // Calculate total average score
-        Double totalAverageScore = parameterAverages.isEmpty() ? 0.0 : totalWeightedScore;
+        Double averageTotalScore = parameterScores.isEmpty() ? 0.0 : totalWeightedScore;
         
         return new CompetitionRatingDataResponse.EntryRatingData(
             entry.getId(),
             entry.getEntryName(),
-            entry.getDescription(),
-            entry.getFilePath(),
-            parameterAverages,
-            totalAverageScore,
-            totalJudges,
-            completedRatings
+            entry.getContestantName(),
+            averageTotalScore,
+            completedRatings,
+            parameterScores
         );
     }
     
@@ -213,24 +210,15 @@ public class RatingDataService {
      * Rating data is visible to:
      * - Competition creator (admin)
      * - Competition judges
-     * - All users if competition has ended
+     * - All authenticated users for viewing competition entries
      */
     public boolean canViewRatingData(Long competitionId, Long userId) {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new IllegalArgumentException("赛事不存在"));
         
-        // If competition has ended, everyone can view
-        if (competition.isEnded() || competition.isDeadlinePassed()) {
-            return true;
-        }
-        
-        // Check if user is the competition creator
-        if (competition.getCreator().getId().equals(userId)) {
-            return true;
-        }
-        
-        // Check if user is a judge for this competition
-        return judgeRepository.existsByCompetitionIdAndJudgeId(competitionId, userId);
+        // All authenticated users can view competition data
+        // This allows regular users to browse competitions and view entry information
+        return true;
     }
     
     /**

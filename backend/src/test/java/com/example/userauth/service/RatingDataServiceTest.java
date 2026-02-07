@@ -102,10 +102,9 @@ class RatingDataServiceTest {
         CompetitionRatingDataResponse.EntryRatingData entryData = result.getEntries().get(0);
         assertEquals(1L, entryData.getEntryId());
         assertEquals("Test Entry", entryData.getEntryName());
-        assertEquals(2, entryData.getParameterAverages().size());
-        assertEquals(85.0, entryData.getTotalAverageScore()); // 25.0 + 60.0
-        assertEquals(2, entryData.getTotalJudges());
-        assertEquals(2, entryData.getCompletedRatings());
+        assertEquals(2, entryData.getParameterScores().size());
+        assertEquals(85.0, entryData.getAverageTotalScore()); // 25.0 + 60.0
+        assertEquals(2, entryData.getNumberOfRatings());
     }
     
     @Test

@@ -203,19 +203,22 @@ public class CompetitionResponse {
         private String filePath;
         private Integer displayOrder;
         private String status;
+        private String contestantName;
         private LocalDateTime createdAt;
         private LocalDateTime updatedAt;
         
         public EntryResponse() {}
         
         public EntryResponse(Long id, String entryName, String description, String filePath,
-                           Integer displayOrder, String status, LocalDateTime createdAt, LocalDateTime updatedAt) {
+                           Integer displayOrder, String status, String contestantName,
+                           LocalDateTime createdAt, LocalDateTime updatedAt) {
             this.id = id;
             this.entryName = entryName;
             this.description = description;
             this.filePath = filePath;
             this.displayOrder = displayOrder;
             this.status = status;
+            this.contestantName = contestantName;
             this.createdAt = createdAt;
             this.updatedAt = updatedAt;
         }
@@ -267,6 +270,14 @@ public class CompetitionResponse {
         
         public void setStatus(String status) {
             this.status = status;
+        }
+        
+        public String getContestantName() {
+            return contestantName;
+        }
+        
+        public void setContestantName(String contestantName) {
+            this.contestantName = contestantName;
         }
         
         public LocalDateTime getCreatedAt() {

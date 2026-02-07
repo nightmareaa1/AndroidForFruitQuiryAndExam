@@ -6,6 +6,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.NavType
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.example.userauth.ui.screen.LoginScreen
 import com.example.userauth.ui.screen.AdminScreen
 import com.example.userauth.ui.screen.ModelManagementScreen
@@ -17,6 +20,7 @@ import com.example.userauth.ui.screen.FruitNutritionScreen
 import com.example.userauth.ui.screen.MainScreen
 import com.example.userauth.ui.screen.DataDisplayScreen
 import com.example.userauth.ui.screen.DataDisplayDetailScreen
+import com.example.userauth.ui.screen.EntryAddScreen
 import com.example.userauth.viewmodel.DataDisplayViewModel
 import com.example.userauth.ui.screen.RegisterScreen
 import com.example.userauth.viewmodel.AuthViewModel
@@ -90,31 +94,57 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        // Data display list and detail routes - share the same ViewModel instance
-        composable(Screen.DataDisplay.route) {
-            // Create ViewModel once and share between list and detail screens
-            val dataViewModel: DataDisplayViewModel = hiltViewModel()
-            DataDisplayScreen(
-                onBack = { navController.popBackStack() },
-                onCardClick = { id ->
-                    navController.navigate(Screen.DataDisplayDetail.route.replace("{submissionId}", id))
-                },
-                viewModel = dataViewModel
-            )
-        }
-        composable(Screen.DataDisplayDetail.route) { backStack ->
-            val id = backStack.arguments?.getString("submissionId")
-            if (id.isNullOrBlank()) {
-                // Invalid parameter - navigate back with error handling
+        // Data display list route
+        composable(Screen.DataDisplay.route) { backStack ->
+            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull()
+            if (competitionId == null) {
                 LaunchedEffect(Unit) {
                     navController.popBackStack()
                 }
                 return@composable
             }
-            // Share the same ViewModel instance with the list screen
             val dataViewModel: DataDisplayViewModel = hiltViewModel()
+            
+            // Load data for the competition
+            LaunchedEffect(competitionId) {
+                dataViewModel.loadSubmissions(competitionId)
+            }
+            
+            DataDisplayScreen(
+                onBack = { navController.popBackStack() },
+                onCardClick = { id ->
+                    navController.navigate(Screen.dataDisplayDetail(competitionId, id))
+                },
+                viewModel = dataViewModel
+            )
+        }
+        // Data display detail route
+        composable(
+            route = Screen.DataDisplayDetail.route,
+            arguments = listOf(
+                navArgument("competitionId") { type = NavType.LongType },
+                navArgument("submissionId") { type = NavType.StringType }
+            )
+        ) { backStack ->
+            val competitionId = backStack.arguments?.getLong("competitionId") ?: 0L
+            val submissionId = backStack.arguments?.getString("submissionId") ?: ""
+            
+            if (submissionId.isBlank()) {
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+                return@composable
+            }
+            
+            val dataViewModel: DataDisplayViewModel = hiltViewModel()
+            
+            // Load data if not loaded
+            LaunchedEffect(competitionId) {
+                dataViewModel.loadSubmissions(competitionId)
+            }
+            
             DataDisplayDetailScreen(
-                submissionId = id,
+                submissionId = submissionId,
                 onBack = { navController.popBackStack() },
                 viewModel = dataViewModel
             )
@@ -171,6 +201,14 @@ fun NavGraph(navController: NavHostController) {
                 onBack = { navController.popBackStack() },
                 onCompetitionClick = { competitionId ->
                     navController.navigate(Screen.Score.route.replace("{competitionId}", competitionId.toString()))
+                },
+                onNavigateToDataDisplay = { competitionId ->
+                    navController.navigate(Screen.DataDisplay.route.replace("{competitionId}", competitionId.toString()))
+                },
+                onNavigateToEntryAdd = { competitionId, competitionName ->
+                    navController.navigate(Screen.EntryAdd.route
+                        .replace("{competitionId}", competitionId.toString())
+                        .replace("{competitionName}", java.net.URLEncoder.encode(competitionName, "UTF-8")))
                 }
             )
         }
@@ -253,6 +291,27 @@ fun NavGraph(navController: NavHostController) {
             RatingScreen(
                 competitionId = competitionId,
                 onBack = { navController.popBackStack() }
+            )
+        }
+        
+        // Entry add screen - for users to submit their entries
+        composable(
+            route = Screen.EntryAdd.route,
+            arguments = listOf(
+                navArgument("competitionId") { type = NavType.LongType },
+                navArgument("competitionName") { type = NavType.StringType }
+            )
+        ) { backStack ->
+            val competitionId = backStack.arguments?.getLong("competitionId") ?: 0L
+            val competitionName = backStack.arguments?.getString("competitionName") ?: ""
+            
+            EntryAddScreen(
+                competitionId = competitionId,
+                competitionName = competitionName,
+                onBack = { navController.popBackStack() },
+                onSubmissionSuccess = {
+                    navController.popBackStack()
+                }
             )
         }
     }
