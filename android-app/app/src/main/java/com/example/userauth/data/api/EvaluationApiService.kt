@@ -18,31 +18,19 @@ interface EvaluationApiService {
      * GET /evaluation-models
      */
     @GET("evaluation-models")
-    suspend fun getEvaluationModels(): Response<List<EvaluationModelResponse>>
+    suspend fun getEvaluationModels(): Response<List<EvaluationModelDto>>
 
-    /**
-     * Create new evaluation model (Admin only)
-     * POST /evaluation-models
-     */
     @POST("evaluation-models")
-    suspend fun createEvaluationModel(@Body request: EvaluationModelRequest): Response<EvaluationModelResponse>
+    suspend fun createEvaluationModel(@Body request: EvaluationModelRequest): Response<EvaluationModelDto>
 
-    /**
-     * Get evaluation model by ID
-     * GET /evaluation-models/{id}
-     */
     @GET("evaluation-models/{id}")
-    suspend fun getEvaluationModel(@Path("id") id: Long): Response<EvaluationModelResponse>
+    suspend fun getEvaluationModel(@Path("id") id: Long): Response<EvaluationModelDto>
 
-    /**
-     * Update evaluation model (Admin only)
-     * PUT /evaluation-models/{id}
-     */
     @PUT("evaluation-models/{id}")
     suspend fun updateEvaluationModel(
         @Path("id") id: Long,
         @Body request: EvaluationModelRequest
-    ): Response<EvaluationModelResponse>
+    ): Response<EvaluationModelDto>
 
     /**
      * Delete evaluation model (Admin only)
@@ -57,31 +45,19 @@ interface EvaluationApiService {
      * GET /competitions
      */
     @GET("competitions")
-    suspend fun getCompetitions(): Response<List<CompetitionResponse>>
+    suspend fun getCompetitions(): Response<List<CompetitionDto>>
 
-    /**
-     * Create new competition (Admin only)
-     * POST /competitions
-     */
     @POST("competitions")
-    suspend fun createCompetition(@Body request: CompetitionRequest): Response<CompetitionResponse>
+    suspend fun createCompetition(@Body request: CompetitionRequest): Response<CompetitionDto>
 
-    /**
-     * Get competition by ID
-     * GET /competitions/{id}
-     */
     @GET("competitions/{id}")
-    suspend fun getCompetition(@Path("id") id: Long): Response<CompetitionResponse>
+    suspend fun getCompetition(@Path("id") id: Long): Response<CompetitionDto>
 
-    /**
-     * Update competition (Admin only)
-     * PUT /competitions/{id}
-     */
     @PUT("competitions/{id}")
     suspend fun updateCompetition(
         @Path("id") id: Long,
         @Body request: CompetitionRequest
-    ): Response<CompetitionResponse>
+    ): Response<CompetitionDto>
 
     /**
      * Delete competition (Admin only)
@@ -109,14 +85,10 @@ interface EvaluationApiService {
      * POST /ratings
      */
     @POST("ratings")
-    suspend fun submitRating(@Body request: RatingRequest): Response<RatingResponse>
+    suspend fun submitRating(@Body request: RatingRequestDto): Response<RatingResponseDto>
 
-    /**
-     * Get competition rating data
-     * GET /ratings/{competitionId}
-     */
     @GET("ratings/{competitionId}")
-    suspend fun getCompetitionRatings(@Path("competitionId") competitionId: Long): Response<List<RatingResponse>>
+    suspend fun getCompetitionRatings(@Path("competitionId") competitionId: Long): Response<List<RatingResponseDto>>
 
     /**
      * Export competition data as CSV (Admin only)

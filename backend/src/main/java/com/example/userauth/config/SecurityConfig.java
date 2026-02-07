@@ -19,6 +19,16 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,6 +61,33 @@ public class SecurityConfig {
     @Autowired
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+    }
+
+    /**
+     * Force UTF-8 encoding filter - runs before Spring Security
+     */
+    private Filter encodingFilter() {
+        return new Filter() {
+            @Override
+            public void init(FilterConfig filterConfig) throws ServletException {}
+
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                    throws IOException, ServletException {
+                HttpServletRequest req = (HttpServletRequest) request;
+                HttpServletResponse res = (HttpServletResponse) response;
+                
+                // Force UTF-8 encoding for all requests
+                req.setCharacterEncoding("UTF-8");
+                res.setCharacterEncoding("UTF-8");
+                res.setContentType("application/json;charset=UTF-8");
+                
+                chain.doFilter(req, res);
+            }
+
+            @Override
+            public void destroy() {}
+        };
     }
 
     /**
@@ -160,7 +197,8 @@ public class SecurityConfig {
             )
             
             // Add JWT authentication filter
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(encodingFilter(), JwtAuthenticationFilter.class);
 
         return http.build();
     }

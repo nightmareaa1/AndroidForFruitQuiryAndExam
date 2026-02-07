@@ -120,6 +120,9 @@ dependencies {
     // SharedPreferences
     implementation 'androidx.preference:preference-ktx:1.2.1'
 
+    // JWT decoding for parsing token claims
+    implementation 'com.auth0.android:jwtdecode:2.0.2'
+
     // Testing dependencies
     testImplementation 'junit:junit:4.13.2'
     // Mockito 5.x with built-in inline mocking (no separate mockito-inline needed)

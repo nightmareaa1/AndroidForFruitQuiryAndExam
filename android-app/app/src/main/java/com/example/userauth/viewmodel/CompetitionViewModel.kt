@@ -3,7 +3,7 @@ package com.example.userauth.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.userauth.data.api.EvaluationApiService
-import com.example.userauth.data.api.dto.CompetitionResponse
+import com.example.userauth.data.api.dto.CompetitionDto
 import com.example.userauth.data.model.Competition
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,11 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-/**
- * ViewModel for Competition screen
- * Handles competition listing and API calls
- * Requirements: 6.3.1-6.3.16
- */
 @HiltViewModel
 class CompetitionViewModel @Inject constructor(
     private val evaluationApiService: EvaluationApiService
@@ -59,16 +54,13 @@ class CompetitionViewModel @Inject constructor(
     }
 }
 
-/**
- * Extension function to convert CompetitionResponse to Competition model
- */
-fun CompetitionResponse.toCompetition(): Competition {
+fun CompetitionDto.toCompetition(): Competition {
     return Competition(
-        id = this.id,
-        name = this.name,
-        modelId = this.modelId,
-        creatorId = this.creatorId,
-        deadline = this.deadline,
-        status = this.status
+        id = id,
+        name = name,
+        modelId = modelId ?: 0,
+        creatorId = creatorId ?: 0,
+        deadline = deadline?.substring(0, 10) ?: "",
+        status = status ?: "ACTIVE"
     )
 }

@@ -110,11 +110,13 @@ class AuthRepository @Inject constructor(
     }
 
     /**
-     * Get stored username
+     * Get username from JWT token for real-time accuracy.
      * @return Username or null if not found
      */
     fun getUsername(): String? {
-        return preferencesManager.getUsername()
+        // Try to get username from token first for real-time accuracy
+        return preferencesManager.getUsernameFromToken()
+            ?: preferencesManager.getUsername() // Fallback to cached value
     }
 
     /**

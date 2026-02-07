@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.userauth.viewmodel.ScoreViewModel
 import com.example.userauth.data.model.SubmissionScore
@@ -21,7 +22,7 @@ import com.example.userauth.data.model.ScoreParameter
 fun ScoreScreen(
     competitionId: Long,
     onBack: () -> Unit,
-    viewModel: ScoreViewModel = viewModel()
+    viewModel: ScoreViewModel = hiltViewModel()
 ) {
     val submissions by viewModel.submissions.collectAsState()
     val competitionName by viewModel.competitionName.collectAsState()

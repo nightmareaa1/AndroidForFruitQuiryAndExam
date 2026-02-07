@@ -1,19 +1,22 @@
 package com.example.userauth.viewmodel
 
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import com.example.userauth.data.model.FruitNutrition
 import com.example.userauth.data.model.QueryDataItem
+import javax.inject.Inject
 
-class FruitNutritionViewModel(
-    initialFruits: List<FruitNutrition> = listOf(
-        FruitNutrition("芒果", 60, 14),
-        FruitNutrition("香蕉", 89, 12)
+@HiltViewModel
+class FruitNutritionViewModel @Inject constructor() : ViewModel() {
+    private val _fruits = MutableStateFlow<List<FruitNutrition>>(
+        listOf(
+            FruitNutrition("芒果", 60, 14),
+            FruitNutrition("香蕉", 89, 12)
+        )
     )
-) : ViewModel() {
-    private val _fruits = MutableStateFlow<List<FruitNutrition>>(initialFruits)
     val fruits: StateFlow<List<FruitNutrition>> = _fruits.asStateFlow()
 
     // Query results placeholder for UI testing

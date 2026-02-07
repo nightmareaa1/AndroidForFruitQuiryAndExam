@@ -4,14 +4,32 @@ Spring Boot backend service for the User Authentication System.
 
 ## Features
 
-- User registration and authentication
-- JWT-based security
-- Evaluation model management
-- Competition and rating system
-- Fruit nutrition query system
-- File upload support
-- Redis caching
-- MySQL database with Flyway migrations
+- **User Management**
+  - User registration and authentication
+  - JWT-based stateless security
+  - Role-based access control (ADMIN, USER, JUDGE)
+  - BCrypt password hashing
+
+- **Fruit Query System**
+  - Nutrition data queries (芒果, 香蕉)
+  - Flavor profile queries
+  - RESTful API with JSON responses
+
+- **Evaluation System** (赛事评价)
+  - Evaluation model management (Admin only)
+  - Competition creation and management
+  - Judge assignment system
+  - Entry submission with file uploads
+  - Multi-parameter rating/scoring
+  - CSV export functionality
+
+- **Infrastructure**
+  - MySQL 8.0 primary database
+  - Redis 7.0 caching and session storage
+  - Flyway database migrations
+  - Docker containerization
+  - Comprehensive health checks
+  - Prometheus metrics and monitoring
 
 ## Technology Stack
 
@@ -40,12 +58,20 @@ Spring Boot backend service for the User Authentication System.
 
 1. **Start development environment:**
    ```bash
-   # Windows
+   # Windows (Recommended)
    scripts\dev-start.bat
    
-   # Linux/Mac
+   # Linux/Mac (Recommended)
    ./scripts/dev-start.sh
+   
+   # Or manually with Docker Compose
+   docker-compose -f docker-compose.dev.yml up -d
    ```
+   
+   **Services started:**
+   - MySQL on port 3306
+   - Redis on port 6379
+   - Backend on port 8080
 
 2. **Build and run locally:**
    ```bash
@@ -55,7 +81,7 @@ Spring Boot backend service for the User Authentication System.
 
 3. **Access the application:**
    - API: http://localhost:8080/api
-   - Health: http://localhost:8080/api/health
+   - Health: http://localhost:8080/actuator/health
    - Actuator: http://localhost:8080/actuator
 
 ### Testing
@@ -101,10 +127,20 @@ mvn flyway:info
 
 - `GET /api/fruit/query?type={nutrition|flavor}&fruit={mango|banana}` - Query fruit data
 
+### Evaluation System Endpoints
+
+- `GET /api/evaluation-models` - Get all evaluation models
+- `POST /api/evaluation-models` - Create evaluation model (Admin only)
+- `GET /api/competitions` - Get competitions (filtered by user role)
+- `POST /api/competitions` - Create competition (Admin only)
+- `GET /api/competitions/{id}` - Get competition details
+- `POST /api/competitions/{id}/entries` - Submit competition entries (Admin only)
+- `POST /api/ratings` - Submit rating for entry (Judge only)
+- `GET /api/ratings/{competitionId}` - Get competition ratings
+
 ### Health Endpoints
 
-- `GET /api/health` - Basic health check
-- `GET /actuator/health` - Detailed health information
+- `GET /actuator/health` - Application health check
 
 ## Configuration
 
@@ -118,10 +154,12 @@ mvn flyway:info
 | `SPRING_DATASOURCE_PASSWORD` | Database password | `password` |
 | `SPRING_REDIS_HOST` | Redis host | `localhost` |
 | `SPRING_REDIS_PORT` | Redis port | `6379` |
-| `JWT_SECRET` | JWT signing secret | (required in production) |
-| `JWT_EXPIRATION` | JWT expiration time (ms) | `86400000` (24h) |
+| `SPRING_REDIS_PASSWORD` | Redis password | (optional) |
+| `JWT_REFRESH_EXPIRATION` | Refresh token expiration (ms) | `604800000` (7d) |
 | `UPLOAD_PATH` | File upload directory | `./uploads` |
 | `MAX_FILE_SIZE` | Maximum file size | `10MB` |
+| `LOGGING_LEVEL_ROOT` | Root logging level | `INFO` |
+| `SERVER_PORT` | Server port | `8080` |
 
 ### Profiles
 
@@ -158,6 +196,16 @@ mvn flyway:info
 - `nutrition_data` - Fruit nutrition information
 - `flavor_data` - Fruit flavor information
 
+### Evaluation System Tables
+
+- `evaluation_models` - Evaluation model definitions
+- `evaluation_parameters` - Model parameters with weights
+- `competitions` - Competition information
+- `competition_judges` - Competition-judge assignments
+- `competition_entries` - Competition entries/works
+- `ratings` - Competition ratings/scores
+- `scores` - Individual parameter scores
+
 ### Migration Strategy
 
 - Flyway for version-controlled migrations
@@ -189,17 +237,42 @@ mvn flyway:info
 
 ## Deployment
 
+### Quick Start with Scripts
+
+```bash
+# Windows
+scripts\dev-start.bat      # Start development environment
+scripts\dev-stop.bat       # Stop development environment
+scripts\dev-restart.bat    # Restart services
+scripts\deploy-prod.bat    # Production deployment
+
+# Linux/Mac
+./scripts/dev-start.sh
+./scripts/dev-stop.sh
+./scripts/dev-restart.sh
+./scripts/deploy-prod.sh
+```
+
 ### Docker
 
 ```bash
 # Build image
 docker build -t userauth-backend .
 
-# Run container
-docker run -p 8080:8080 \
-  -e SPRING_PROFILES_ACTIVE=prod \
-  -e SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/userauth \
-  userauth-backend
+# 停止所有旧容器
+docker-compose -f docker-compose.dev.yml down
+
+# 启动开发环境
+docker-compose -f docker-compose.dev.yml up -d
+
+# 检查状态
+docker-compose -f docker-compose.dev.yml ps
+
+# 查看日志
+docker-compose -f docker-compose.dev.yml logs -f backend
+
+# 测试 API
+curl http://localhost:8080/api/auth/register -X POST -H "Content-Type: application/json" -d '{"username":"test","password":"Test1234!"}'
 ```
 
 ### Production Checklist
@@ -261,6 +334,32 @@ redis-cli -h localhost ping
 - Check JWT secret configuration
 - Verify token expiration settings
 - Check system clock synchronization
+
+**Docker Container Unhealthy**
+```bash
+# Check container logs
+docker logs userauth-backend-dev
+
+# Check health endpoint
+curl http://localhost:8080/actuator/health
+
+# Restart container
+docker-compose -f docker-compose.dev.yml restart backend
+```
+
+**API Returns 403 Forbidden**
+- Verify JWT token is included in Authorization header
+- Check user has required role (ADMIN/USER)
+- Verify token hasn't expired
+
+**Port Already in Use**
+```bash
+# Find process using port 8080
+lsof -i :8080  # Linux/Mac
+netstat -ano | findstr :8080  # Windows
+
+# Change port in docker-compose.dev.yml if needed
+```
 
 ### Performance Tuning
 

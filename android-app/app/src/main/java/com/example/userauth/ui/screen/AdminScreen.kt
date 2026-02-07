@@ -22,11 +22,9 @@ fun AdminScreen(
     onBack: () -> Unit,
     onNavigateToModelManagement: (() -> Unit)? = null,
     onNavigateToCompetitionManagement: (() -> Unit)? = null,
-    isAdminProvider: (() -> Boolean)? = null,
-    userViewModel: UserViewModel? = null
+    viewModel: UserViewModel = hiltViewModel()
 ) {
-    // Allow test injection via isAdminProvider; fall back to real VM if not provided
-    val isAdmin = isAdminProvider?.invoke() ?: (userViewModel?.isCurrentUserAdmin() ?: false)
+    val isAdmin = viewModel.isCurrentUserAdmin()
 
     Scaffold(
         topBar = {

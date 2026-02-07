@@ -57,10 +57,21 @@ open class PreferencesManager @Inject constructor(
     }
 
     /**
-     * Check if user is admin
+     * Check if user is admin by parsing the JWT token.
+     * This ensures real-time permission status from the backend.
      */
     open fun isAdmin(): Boolean {
-        return prefs.getBoolean(KEY_IS_ADMIN, false)
+        val token = getAuthToken()
+        return JwtTokenParser.extractIsAdmin(token)
+    }
+
+    /**
+     * Get username from JWT token for real-time accuracy.
+     * Falls back to cached value if token parsing fails.
+     */
+    open fun getUsernameFromToken(): String? {
+        val token = getAuthToken()
+        return JwtTokenParser.extractUsername(token)
     }
 
     /**

@@ -8,15 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.userauth.viewmodel.DataDisplayViewModel
-import com.example.userauth.viewmodel.ScoreViewModel
 import com.example.userauth.data.model.SubmissionScore
 import com.example.userauth.ui.components.RadarChartView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DataDisplayDetailScreen(submissionId: String, onBack: () -> Unit, viewModel: DataDisplayViewModel = viewModel()) {
+fun DataDisplayDetailScreen(submissionId: String, onBack: () -> Unit, viewModel: DataDisplayViewModel) {
     val submissions = viewModel.submissions.collectAsState()
     val sub = submissions.value.find { it.id == submissionId } ?: return
     val dims = sub.scores.map { it.name }

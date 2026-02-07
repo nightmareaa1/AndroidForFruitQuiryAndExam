@@ -1,6 +1,7 @@
 package com.example.userauth.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -9,9 +10,10 @@ import com.example.userauth.ui.screen.LoginScreen
 import com.example.userauth.ui.screen.AdminScreen
 import com.example.userauth.ui.screen.ModelManagementScreen
 import com.example.userauth.ui.screen.CompetitionManagementScreen
+import com.example.userauth.ui.screen.CompetitionEditScreen
+import com.example.userauth.ui.screen.CompetitionAddScreen
 import com.example.userauth.ui.screen.ScoreScreen
 import com.example.userauth.ui.screen.FruitNutritionScreen
-import com.example.userauth.viewmodel.FruitNutritionViewModel
 import com.example.userauth.ui.screen.MainScreen
 import com.example.userauth.ui.screen.DataDisplayScreen
 import com.example.userauth.ui.screen.DataDisplayDetailScreen
@@ -19,6 +21,7 @@ import com.example.userauth.viewmodel.DataDisplayViewModel
 import com.example.userauth.ui.screen.RegisterScreen
 import com.example.userauth.viewmodel.AuthViewModel
 import com.example.userauth.ui.screen.CompetitionScreen
+import com.example.userauth.ui.screen.RatingScreen
 
 /**
  * Navigation graph for the application
@@ -87,29 +90,76 @@ fun NavGraph(navController: NavHostController) {
                 }
             )
         }
-        // Data display list and detail routes
+        // Data display list and detail routes - share the same ViewModel instance
         composable(Screen.DataDisplay.route) {
-            DataDisplayScreen(onBack = { navController.popBackStack() }, onCardClick = { id -> navController.navigate(Screen.DataDisplayDetail.route.replace("{submissionId}", id)) }, viewModel = hiltViewModel())
+            // Create ViewModel once and share between list and detail screens
+            val dataViewModel: DataDisplayViewModel = hiltViewModel()
+            DataDisplayScreen(
+                onBack = { navController.popBackStack() },
+                onCardClick = { id ->
+                    navController.navigate(Screen.DataDisplayDetail.route.replace("{submissionId}", id))
+                },
+                viewModel = dataViewModel
+            )
         }
         composable(Screen.DataDisplayDetail.route) { backStack ->
-            val id = backStack.arguments?.getString("submissionId") ?: return@composable
-            DataDisplayDetailScreen(submissionId = id, onBack = { navController.popBackStack() })
+            val id = backStack.arguments?.getString("submissionId")
+            if (id.isNullOrBlank()) {
+                // Invalid parameter - navigate back with error handling
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+                return@composable
+            }
+            // Share the same ViewModel instance with the list screen
+            val dataViewModel: DataDisplayViewModel = hiltViewModel()
+            DataDisplayDetailScreen(
+                submissionId = id,
+                onBack = { navController.popBackStack() },
+                viewModel = dataViewModel
+            )
         }
-        // Admin route
+        // Admin route - requires admin privileges
         composable(Screen.Admin.route) {
+            // Check admin permission at navigation level
+            if (!authViewModel.isCurrentUserAdmin()) {
+                // Non-admin users are redirected to main screen
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.Admin.route) { inclusive = true }
+                    }
+                }
+                return@composable
+            }
             AdminScreen(
                 onBack = { navController.popBackStack() },
                 onNavigateToModelManagement = { navController.navigate(Screen.ModelManagement.route) },
                 onNavigateToCompetitionManagement = { navController.navigate(Screen.CompetitionManagement.route) }
             )
         }
-        // Model management route (admin only)
+        // Model management route - requires admin privileges
         composable(Screen.ModelManagement.route) {
+            // Check admin permission at navigation level
+            if (!authViewModel.isCurrentUserAdmin()) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.ModelManagement.route) { inclusive = true }
+                    }
+                }
+                return@composable
+            }
             ModelManagementScreen(onBack = { navController.popBackStack() })
         }
         // Score screen (评委评分)
         composable(Screen.Score.route) { backStack ->
-            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull() ?: return@composable
+            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull()
+            if (competitionId == null) {
+                // Invalid competition ID - navigate back
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+                return@composable
+            }
             ScoreScreen(
                 competitionId = competitionId,
                 onBack = { navController.popBackStack() }
@@ -129,14 +179,81 @@ fun NavGraph(navController: NavHostController) {
             FruitNutritionScreen(
                 onBack = { navController.popBackStack() },
                 onFruitClick = { /* optional: navigate to detail in future */ },
-                viewModel = FruitNutritionViewModel()
+                viewModel = hiltViewModel()
             )
         }
-        // Competition management route (admin only)
+        // Competition management route - requires admin privileges
         composable(Screen.CompetitionManagement.route) {
-            CompetitionManagementScreen(onBack = { navController.popBackStack() })
+            if (!authViewModel.isCurrentUserAdmin()) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.CompetitionManagement.route) { inclusive = true }
+                    }
+                }
+                return@composable
+            }
+            CompetitionManagementScreen(
+                onBack = { navController.popBackStack() },
+                onNavigateToEdit = { competitionId ->
+                    navController.navigate(Screen.competitionEdit(competitionId))
+                },
+                onNavigateToAdd = {
+                    navController.navigate(Screen.CompetitionAdd.route)
+                }
+            )
         }
-        
-        // TODO: Add more navigation destinations for other features
+
+        // Competition edit route - requires admin privileges
+        composable(Screen.CompetitionEdit.route) { backStack ->
+            if (!authViewModel.isCurrentUserAdmin()) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.CompetitionEdit.route) { inclusive = true }
+                    }
+                }
+                return@composable
+            }
+            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull()
+            if (competitionId == null) {
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+                return@composable
+            }
+            CompetitionEditScreen(
+                competitionId = competitionId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Competition add route - requires admin privileges
+        composable(Screen.CompetitionAdd.route) {
+            if (!authViewModel.isCurrentUserAdmin()) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.CompetitionAdd.route) { inclusive = true }
+                    }
+                }
+                return@composable
+            }
+            CompetitionAddScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Rating screen for judges
+        composable(Screen.Rating.route) { backStack ->
+            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull()
+            if (competitionId == null) {
+                LaunchedEffect(Unit) {
+                    navController.popBackStack()
+                }
+                return@composable
+            }
+            RatingScreen(
+                competitionId = competitionId,
+                onBack = { navController.popBackStack() }
+            )
+        }
     }
 }

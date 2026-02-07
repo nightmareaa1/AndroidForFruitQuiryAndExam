@@ -13,6 +13,12 @@ spring:
     date-format: yyyy-MM-dd'T'HH:mm:ss.SSSZ
     default-property-inclusion: non_null
 
+  # Character encoding configuration
+  charset:
+    utf-8:
+      enabled: true
+    use-unicode-encoding: true
+
   # Database Configuration
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/userauth_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
@@ -76,6 +82,14 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+      force-response: true
+  tomcat:
+    uri-encoding: UTF-8
 
 # Management/Actuator Configuration (unified)
 management:

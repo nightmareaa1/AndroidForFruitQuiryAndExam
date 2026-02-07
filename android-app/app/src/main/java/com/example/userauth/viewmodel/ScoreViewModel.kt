@@ -3,6 +3,7 @@ package com.example.userauth.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.userauth.data.api.EvaluationApiService
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +13,8 @@ import com.example.userauth.data.model.SubmissionScore
 import com.example.userauth.data.model.ScoreParameter
 import javax.inject.Inject
 
-open class ScoreViewModel @Inject constructor(
+@HiltViewModel
+class ScoreViewModel @Inject constructor(
     private val evaluationApiService: EvaluationApiService
 ) : ViewModel() {
     
