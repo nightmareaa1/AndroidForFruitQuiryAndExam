@@ -1,14 +1,47 @@
 package com.example.userauth.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import com.example.userauth.data.model.SubmissionScore
 import com.example.userauth.data.model.ScoreParameter
+import com.example.userauth.data.api.EvaluationApiService
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 // Simple data-display view model that derives aggregates from ScoreViewModel data
-class DataDisplayViewModel(private val scoreViewModel: ScoreViewModel = ScoreViewModel()) : ViewModel() {
-    val submissions: StateFlow<List<SubmissionScore>> = scoreViewModel.submissions
+class DataDisplayViewModel @Inject constructor(
+    private val evaluationApiService: EvaluationApiService
+) : ViewModel() {
+    private val _submissions = MutableStateFlow<List<SubmissionScore>>(emptyList())
+    val submissions: StateFlow<List<SubmissionScore>> = _submissions.asStateFlow()
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    init {
+        // Initialize with placeholder data
+        _submissions.value = emptyList()
+    }
+
+    /**
+     * Load submissions for data display
+     */
+    fun loadSubmissions() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                // TODO: Load actual data from API when endpoints are available
+                _submissions.value = emptyList()
+            } catch (e: Exception) {
+                _submissions.value = emptyList()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
     data class SubmissionAverage(
         val id: String,

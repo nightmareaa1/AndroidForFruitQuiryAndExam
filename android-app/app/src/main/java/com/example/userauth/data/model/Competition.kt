@@ -1,7 +1,10 @@
 package com.example.userauth.data.model
 
 data class Competition(
-    val id: String,
+    val id: Long,
     val name: String,
-    val date: String
+    val modelId: Long,
+    val creatorId: Long,
+    val deadline: String,
+    val status: String
 )

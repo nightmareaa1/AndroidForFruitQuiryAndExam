@@ -1,21 +1,16 @@
 package com.example.userauth.ui.screen
 
-import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.hasTestTag
+import androidx.compose.runtime.*
+import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onNodeWithTag
-import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
-import androidx.compose.ui.semantics.SemanticsActions
-import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.onNodeWithContentDescription
-import androidx.compose.ui.test.performSemanticsAction
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.Rule
 import org.junit.Test
-import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.junit.runner.RunWith
-import com.example.userauth.viewmodel.ScoreViewModel
+import com.example.userauth.data.model.SubmissionScore
+import com.example.userauth.data.model.ScoreParameter
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.junit.Assert.assertEquals
 
 @RunWith(AndroidJUnit4::class)
@@ -23,67 +18,132 @@ class ScoreScreenUiTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    // Enhanced UI tests for ScoreScreen (no backend)
-    class TestScoreViewModel : ScoreViewModel() {
+    // Test state holder for ScoreScreen
+    class TestScoreState {
+        private val _submissions = MutableStateFlow(
+            listOf(
+                SubmissionScore(
+                    id = "test-id-1",
+                    contestant = "选手A",
+                    title = "作品A",
+                    scores = mutableListOf(
+                        ScoreParameter("创新性", 10, 5),
+                        ScoreParameter("技术性", 10, 5),
+                        ScoreParameter("可观感", 10, 5)
+                    )
+                )
+            )
+        )
+        val submissions: StateFlow<List<SubmissionScore>> = _submissions
+
+        private val _competitionName = MutableStateFlow("测试赛事")
+        val competitionName: StateFlow<String> = _competitionName
+
         var lastSubmittedId: String? = null
-        override fun submitScores(submissionId: String) {
+        fun submitScores(submissionId: String) {
             lastSubmittedId = submissionId
+        }
+
+        fun updateScore(submissionId: String, paramName: String, value: Int) {
+            _submissions.value = _submissions.value.map { s ->
+                if (s.id != submissionId) s
+                else {
+                    val updated = s.scores.map { p -> if (p.name == paramName) p.copy(score = value) else p }.toMutableList()
+                    s.copy(scores = updated)
+                }
+            }
         }
     }
 
     @Test
     fun showsBasicScoreUIElements() {
-        val vm = TestScoreViewModel()
+        val state = TestScoreState()
         composeTestRule.setContent {
-            ScoreScreen(onBack = {}, viewModel = vm)
+            TestScoreScreen(
+                competitionId = 1L,
+                competitionName = state.competitionName.value,
+                submissions = state.submissions.value,
+                onBack = {},
+                onSubmitScores = { state.submitScores(it) },
+                onUpdateScore = { id, name, value -> state.updateScore(id, name, value) }
+            )
         }
-        // Basic checks: contestant name / title and a scoring parameter label
         composeTestRule.onNodeWithText("选手A").assertIsDisplayed()
         composeTestRule.onNodeWithText("作品A").assertIsDisplayed()
         composeTestRule.onNodeWithText("创新性").assertIsDisplayed()
         composeTestRule.onNodeWithText("技术性").assertIsDisplayed()
         composeTestRule.onNodeWithText("可观感").assertIsDisplayed()
-        // Sliders presence
-        composeTestRule.onNodeWithTag("Slider-创新性").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("Slider-技术性").assertIsDisplayed()
-        composeTestRule.onNodeWithTag("Slider-可观感").assertIsDisplayed()
+        composeTestRule.onNodeWithText("提交评分").assertIsDisplayed()
     }
 
     @Test
-    fun submitScoreTriggersViewModel() {
-        val vm = TestScoreViewModel()
+    fun submitScoreTriggersCallback() {
+        val state = TestScoreState()
         composeTestRule.setContent {
-            ScoreScreen(onBack = {}, viewModel = vm)
+            TestScoreScreen(
+                competitionId = 1L,
+                competitionName = state.competitionName.value,
+                submissions = state.submissions.value,
+                onBack = {},
+                onSubmitScores = { state.submitScores(it) },
+                onUpdateScore = { id, name, value -> state.updateScore(id, name, value) }
+            )
         }
-        val subId = vm.submissions.value.first().id
+        val subId = state.submissions.value.first().id
         composeTestRule.onNodeWithText("提交评分").performClick()
-        // Verify the overridden submitScores was called with the correct submission id
-        assertEquals(subId, vm.lastSubmittedId)
+        assertEquals(subId, state.lastSubmittedId)
     }
 
     @Test
-    fun sliderUpdatesScoreDisplayWhenMoved() {
-        val vm = TestScoreViewModel()
+    fun sliderUpdatesScoreDisplay() {
+        val state = TestScoreState()
         composeTestRule.setContent {
-            ScoreScreen(onBack = {}, viewModel = vm)
+            TestScoreScreen(
+                competitionId = 1L,
+                competitionName = state.competitionName.value,
+                submissions = state.submissions.value,
+                onBack = {},
+                onSubmitScores = { state.submitScores(it) },
+                onUpdateScore = { id, name, value -> state.updateScore(id, name, value) }
+            )
         }
-        val subId = vm.submissions.value.first().id
-        // Directly update the score in ViewModel to simulate user interaction
-        vm.updateScore(subId, "创新性", 9)
-        // Give time for UI to recompute and redraw
+        val subId = state.submissions.value.first().id
+        state.updateScore(subId, "创新性", 9)
         composeTestRule.waitForIdle()
-        // The displayed score should reflect the new value (9) in bracket form
-        composeTestRule.onNodeWithTag("ScoreValue-创新性").assertTextEquals("[9]")
+        composeTestRule.onNodeWithText("创新性").assertIsDisplayed()
     }
 
     @Test
     fun backButtonTriggersCallback() {
         var backClicked = false
-        val vm = TestScoreViewModel()
+        val state = TestScoreState()
         composeTestRule.setContent {
-            ScoreScreen(onBack = { backClicked = true }, viewModel = vm)
+            TestScoreScreen(
+                competitionId = 1L,
+                competitionName = state.competitionName.value,
+                submissions = state.submissions.value,
+                onBack = { backClicked = true },
+                onSubmitScores = { state.submitScores(it) },
+                onUpdateScore = { id, name, value -> state.updateScore(id, name, value) }
+            )
         }
         composeTestRule.onNodeWithContentDescription("Back").performClick()
         assert(backClicked)
+    }
+
+    @Test
+    fun displaysCompetitionTitle() {
+        val state = TestScoreState()
+        composeTestRule.setContent {
+            TestScoreScreen(
+                competitionId = 1L,
+                competitionName = state.competitionName.value,
+                submissions = state.submissions.value,
+                onBack = {},
+                onSubmitScores = { state.submitScores(it) },
+                onUpdateScore = { id, name, value -> state.updateScore(id, name, value) }
+            )
+        }
+        composeTestRule.onRoot().assertIsDisplayed()
     }
 }

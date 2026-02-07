@@ -32,6 +32,8 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
+        // Enable core library desugaring for Java 8+ APIs
+        coreLibraryDesugaringEnabled true
     }
     kotlinOptions {
         jvmTarget = '11'
@@ -77,6 +79,9 @@ android {
 }
 
 dependencies {
+    // Enable core library desugaring for Java 8+ APIs (java.time)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
+
     // MPAndroidChart for rich chart visualizations in Score/DataDisplay screens
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // Core Android dependencies

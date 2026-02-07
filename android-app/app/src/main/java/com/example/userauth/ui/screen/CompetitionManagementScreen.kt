@@ -52,7 +52,7 @@ fun CompetitionManagementScreen(
                             modifier = Modifier.padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = "${c.name}  ${c.date}")
+                            Text(text = "${c.name}  截止: ${c.deadline}")
                         }
                     }
                 }

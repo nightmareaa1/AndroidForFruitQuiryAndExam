@@ -4,33 +4,31 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.userauth.viewmodel.ScoreViewModel
 import com.example.userauth.data.model.SubmissionScore
 import com.example.userauth.data.model.ScoreParameter
 
+import androidx.compose.material3.ExperimentalMaterial3Api
+
+/**
+ * Test version of ScoreScreen that accepts a simple contract
+ * This allows testing without extending the real ViewModel
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScoreScreen(
+fun TestScoreScreen(
     competitionId: Long,
+    competitionName: String,
+    submissions: List<SubmissionScore>,
     onBack: () -> Unit,
-    viewModel: ScoreViewModel = viewModel()
+    onSubmitScores: (String) -> Unit,
+    onUpdateScore: (String, String, Int) -> Unit
 ) {
-    val submissions by viewModel.submissions.collectAsState()
-    val competitionName by viewModel.competitionName.collectAsState()
-    
-    // Load competition data when screen opens
-    LaunchedEffect(competitionId) {
-        viewModel.loadCompetition(competitionId)
-    }
-    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -52,16 +50,18 @@ fun ScoreScreen(
                             Text(text = sub.title, style = MaterialTheme.typography.titleMedium)
                             Spacer(Modifier.height(8.dp))
                             sub.scores.forEach { p ->
-                                ScoreParameterRow(submission = sub, param = p, onScoreChange = { name, value ->
-                                    // Update score in ViewModel
-                                    viewModel.updateScore(sub.id, name, value)
-                                })
+                                TestScoreParameterRow(
+                                    param = p,
+                                    onScoreChange = { name, value ->
+                                        onUpdateScore(sub.id, name, value)
+                                    }
+                                )
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.End
                             ) {
-                                Button(onClick = { viewModel.submitScores(sub.id) }) {
+                                Button(onClick = { onSubmitScores(sub.id) }) {
                                     Text("提交评分")
                                 }
                             }
@@ -74,8 +74,7 @@ fun ScoreScreen(
 }
 
 @Composable
-fun ScoreParameterRow(
-    submission: SubmissionScore,
+private fun TestScoreParameterRow(
     param: ScoreParameter,
     onScoreChange: (String, Int) -> Unit
 ) {

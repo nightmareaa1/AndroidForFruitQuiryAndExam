@@ -1,0 +1,2 @@
+# Dev profile - inherits from application.yml
+# Ensure useSSL=false and allowPublicKeyRetrieval=true for MySQL 8.0

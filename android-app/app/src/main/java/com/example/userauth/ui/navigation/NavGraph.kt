@@ -18,6 +18,7 @@ import com.example.userauth.ui.screen.DataDisplayDetailScreen
 import com.example.userauth.viewmodel.DataDisplayViewModel
 import com.example.userauth.ui.screen.RegisterScreen
 import com.example.userauth.viewmodel.AuthViewModel
+import com.example.userauth.ui.screen.CompetitionScreen
 
 /**
  * Navigation graph for the application
@@ -88,7 +89,7 @@ fun NavGraph(navController: NavHostController) {
         }
         // Data display list and detail routes
         composable(Screen.DataDisplay.route) {
-            DataDisplayScreen(onBack = { navController.popBackStack() }, onCardClick = { id -> navController.navigate(Screen.DataDisplayDetail.route.replace("{submissionId}", id)) }, viewModel = DataDisplayViewModel())
+            DataDisplayScreen(onBack = { navController.popBackStack() }, onCardClick = { id -> navController.navigate(Screen.DataDisplayDetail.route.replace("{submissionId}", id)) }, viewModel = hiltViewModel())
         }
         composable(Screen.DataDisplayDetail.route) { backStack ->
             val id = backStack.arguments?.getString("submissionId") ?: return@composable
@@ -107,8 +108,21 @@ fun NavGraph(navController: NavHostController) {
             ModelManagementScreen(onBack = { navController.popBackStack() })
         }
         // Score screen (评委评分)
-        composable(Screen.Score.route) {
-            ScoreScreen(onBack = { navController.popBackStack() })
+        composable(Screen.Score.route) { backStack ->
+            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull() ?: return@composable
+            ScoreScreen(
+                competitionId = competitionId,
+                onBack = { navController.popBackStack() }
+            )
+        }
+        // Competition screen (赛事评价列表)
+        composable(Screen.Competition.route) {
+            CompetitionScreen(
+                onBack = { navController.popBackStack() },
+                onCompetitionClick = { competitionId ->
+                    navController.navigate(Screen.Score.route.replace("{competitionId}", competitionId.toString()))
+                }
+            )
         }
         // Fruit Nutrition screen
         composable(Screen.FruitNutrition.route) {

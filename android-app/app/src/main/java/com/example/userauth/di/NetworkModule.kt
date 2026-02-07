@@ -5,6 +5,8 @@ import com.example.userauth.data.api.AuthApiService
 import com.example.userauth.data.api.AuthInterceptor
 import com.example.userauth.data.api.EvaluationApiService
 import com.example.userauth.data.api.FruitApiService
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +15,8 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
@@ -25,14 +29,21 @@ import javax.inject.Singleton
 object NetworkModule {
 
     // Base URL for the backend API
-    // Using 10.0.2.2 for Android emulator to access localhost
-    // In production, this should be the actual server URL
     private const val BASE_URL = "http://10.0.2.2:8080/api/"
     
     // Network timeouts
     private const val CONNECT_TIMEOUT = 30L
     private const val READ_TIMEOUT = 30L
     private const val WRITE_TIMEOUT = 30L
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return GsonBuilder()
+            .registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeAdapter())
+            .setDateFormat("yyyy-MM-dd'T'HH:mm:ss")
+            .create()
+    }
 
     @Provides
     @Singleton
@@ -49,8 +60,8 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor
     ): OkHttpClient {
         return OkHttpClient.Builder()
-            .addInterceptor(authInterceptor) // Add JWT token to requests
-            .addInterceptor(loggingInterceptor) // Add logging for debugging
+            .addInterceptor(authInterceptor)
+            .addInterceptor(loggingInterceptor)
             .connectTimeout(CONNECT_TIMEOUT, TimeUnit.SECONDS)
             .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
             .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
@@ -59,22 +70,20 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 
-    // Legacy API service (to be removed in future tasks)
     @Provides
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
     }
 
-    // Specific API services
     @Provides
     @Singleton
     fun provideAuthApiService(retrofit: Retrofit): AuthApiService {
@@ -91,5 +100,28 @@ object NetworkModule {
     @Singleton
     fun provideFruitApiService(retrofit: Retrofit): FruitApiService {
         return retrofit.create(FruitApiService::class.java)
+    }
+}
+
+/**
+ * Custom Gson adapter for LocalDateTime serialization/deserialization
+ */
+class LocalDateTimeAdapter : com.google.gson.JsonSerializer<LocalDateTime>, com.google.gson.JsonDeserializer<LocalDateTime> {
+    private val formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
+
+    override fun serialize(
+        src: LocalDateTime?,
+        typeOfSrc: java.lang.reflect.Type?,
+        context: com.google.gson.JsonSerializationContext?
+    ): com.google.gson.JsonElement {
+        return com.google.gson.JsonPrimitive(src?.format(formatter))
+    }
+
+    override fun deserialize(
+        json: com.google.gson.JsonElement?,
+        typeOfT: java.lang.reflect.Type?,
+        context: com.google.gson.JsonDeserializationContext?
+    ): LocalDateTime? {
+        return json?.asString?.let { LocalDateTime.parse(it, formatter) }
     }
 }

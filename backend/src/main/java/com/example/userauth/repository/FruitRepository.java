@@ -28,4 +28,12 @@ public interface FruitRepository extends JpaRepository<Fruit, Long> {
      * @return true if fruit exists, false otherwise
      */
     boolean existsByName(String name);
+
+    /**
+     * Find a fruit by its English name.
+     * 
+     * @param enName the fruit English name
+     * @return Optional containing the fruit if found, empty otherwise
+     */
+    Optional<Fruit> findByEnName(String enName);
 }

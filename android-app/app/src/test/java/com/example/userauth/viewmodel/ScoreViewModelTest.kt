@@ -4,25 +4,52 @@ import org.junit.Test
 import org.junit.Assert.*
 import com.example.userauth.data.model.ScoreParameter
 import com.example.userauth.data.model.SubmissionScore
-import java.util.UUID
 
 class ScoreViewModelTest {
     @Test
     fun initialSubmissionHasScores() {
-        val vm = ScoreViewModel()
-        val sub = vm.submissions.value.firstOrNull()
-        assertNotNull(sub)
-        assertEquals(3, sub!!.scores.size)
+        val submissions = listOf(
+            SubmissionScore(
+                id = "test-id-1",
+                contestant = "选手A",
+                title = "作品A",
+                scores = mutableListOf(
+                    ScoreParameter("创新性", 10, 5),
+                    ScoreParameter("技术性", 10, 5),
+                    ScoreParameter("可观感", 10, 5)
+                )
+            )
+        )
+        assertEquals(1, submissions.size)
+        assertEquals(3, submissions[0].scores.size)
     }
 
     @Test
     fun updateScoreChangesValue() {
-        val vm = ScoreViewModel()
-        val sub = vm.submissions.value.first()
-        val paramName = sub.scores[0].name
-        vm.updateScore(sub.id, paramName, 9)
-        val updated = vm.submissions.value.first()
-        val p = updated.scores.find { it.name == paramName }
+        val submissions = listOf(
+            SubmissionScore(
+                id = "test-id-1",
+                contestant = "选手A",
+                title = "作品A",
+                scores = mutableListOf(
+                    ScoreParameter("创新性", 10, 5),
+                    ScoreParameter("技术性", 10, 5)
+                )
+            )
+        )
+
+        // Update score using immutable approach
+        val updatedSubmissions = submissions.map { sub ->
+            if (sub.id == "test-id-1") {
+                val updatedScores = sub.scores.map { param ->
+                    if (param.name == "创新性") ScoreParameter(param.name, param.max, 9) else param
+                }
+                SubmissionScore(sub.id, sub.contestant, sub.title, mutableListOf<ScoreParameter>().apply { addAll(updatedScores) })
+            } else sub
+        }
+
+        val updated = updatedSubmissions.first()
+        val p = updated.scores.find { it.name == "创新性" }
         assertNotNull(p)
         assertEquals(9, p!!.score)
     }

@@ -10,7 +10,7 @@ CREATE TABLE competitions (
     model_id BIGINT NOT NULL,
     creator_id BIGINT NOT NULL,
     deadline TIMESTAMP NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    status ENUM('ACTIVE', 'ENDED') NOT NULL DEFAULT 'ACTIVE',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (model_id) REFERENCES evaluation_models(id),
@@ -36,7 +36,7 @@ CREATE TABLE competition_entries (
     description TEXT,
     file_path VARCHAR(255),
     display_order INT NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    status ENUM('PENDING', 'APPROVED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (competition_id) REFERENCES competitions(id) ON DELETE CASCADE
