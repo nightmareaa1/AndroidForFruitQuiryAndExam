@@ -3,7 +3,9 @@ package com.example.userauth.data.repository
 import com.example.userauth.data.api.CompetitionApi
 import com.example.userauth.data.api.dto.CompetitionDto
 import com.example.userauth.data.api.dto.CompetitionRequest
+import com.example.userauth.data.api.dto.EntryDto
 import com.example.userauth.data.api.dto.EntryRequestDto
+import com.example.userauth.data.api.dto.EntryStatusUpdateRequest
 import com.example.userauth.data.api.dto.EntrySubmitResponseDto
 import com.example.userauth.data.model.Competition
 import okhttp3.MediaType.Companion.toMediaType
@@ -122,8 +124,7 @@ class CompetitionRepository @Inject constructor(
                 entryName = entryName,
                 description = description
             )
-            
-            // Convert image URI to multipart if provided
+
             val filePart = imageUri?.let { uri ->
                 val imageFile = java.io.File(uri)
                 if (imageFile.exists()) {
@@ -134,15 +135,43 @@ class CompetitionRepository @Inject constructor(
                     )
                 } else null
             }
-            
+
             val response = api.submitEntry(competitionId, request, filePart)
-            
+
             if (response.isSuccessful) {
                 response.body()?.let {
                     Result.success(it)
                 } ?: Result.failure(Exception("Empty response"))
             } else {
                 Result.failure(Exception("Failed to submit entry: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun getCompetitionEntries(competitionId: Long): Result<List<EntryDto>> {
+        return try {
+            val response = api.getCompetitionEntries(competitionId)
+            if (response.isSuccessful) {
+                val entries = response.body() ?: emptyList()
+                Result.success(entries)
+            } else {
+                Result.failure(Exception("Failed to fetch entries: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateEntryStatus(competitionId: Long, entryId: Long, status: String): Result<Unit> {
+        return try {
+            val request = EntryStatusUpdateRequest(status)
+            val response = api.updateEntryStatus(competitionId, entryId, request)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to update status: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

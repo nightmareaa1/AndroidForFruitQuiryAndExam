@@ -54,6 +54,7 @@ data class RatingCompletionResponseDto(
 data class CompetitionRatingDataResponseDto(
     val competitionId: Long,
     val competitionName: String,
+    val modelId: Long?,
     val entries: List<EntryRatingDataDto>
 )
 

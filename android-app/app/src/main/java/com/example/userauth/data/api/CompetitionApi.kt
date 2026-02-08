@@ -30,10 +30,6 @@ interface CompetitionApi {
     @DELETE("competitions/{id}")
     suspend fun deleteCompetition(@Path("id") id: Long): Response<Void>
     
-    /**
-     * Submit entry to competition with optional file upload
-     * POST /api/competitions/{id}/submit
-     */
     @Multipart
     @POST("competitions/{id}/submit")
     suspend fun submitEntry(
@@ -41,4 +37,14 @@ interface CompetitionApi {
         @Part("entry") request: EntryRequestDto,
         @Part file: okhttp3.MultipartBody.Part?
     ): Response<EntrySubmitResponseDto>
+
+    @GET("competitions/{id}/entries")
+    suspend fun getCompetitionEntries(@Path("id") competitionId: Long): Response<List<EntryDto>>
+
+    @PUT("competitions/{competitionId}/entries/{entryId}/status")
+    suspend fun updateEntryStatus(
+        @Path("competitionId") competitionId: Long,
+        @Path("entryId") entryId: Long,
+        @Body request: EntryStatusUpdateRequest
+    ): Response<Void>
 }

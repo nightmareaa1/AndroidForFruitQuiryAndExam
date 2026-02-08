@@ -7,18 +7,20 @@ import java.util.List;
  * Matches Android EntryRatingDataDto structure
  */
 public class CompetitionRatingDataResponse {
-    
+
     private Long competitionId;
     private String competitionName;
+    private Long modelId;
     private List<EntryRatingData> entries;
-    
+
     // Default constructor
     public CompetitionRatingDataResponse() {}
-    
+
     // Constructor
-    public CompetitionRatingDataResponse(Long competitionId, String competitionName, List<EntryRatingData> entries) {
+    public CompetitionRatingDataResponse(Long competitionId, String competitionName, Long modelId, List<EntryRatingData> entries) {
         this.competitionId = competitionId;
         this.competitionName = competitionName;
+        this.modelId = modelId;
         this.entries = entries;
     }
     
@@ -38,7 +40,15 @@ public class CompetitionRatingDataResponse {
     public void setCompetitionName(String competitionName) {
         this.competitionName = competitionName;
     }
-    
+
+    public Long getModelId() {
+        return modelId;
+    }
+
+    public void setModelId(Long modelId) {
+        this.modelId = modelId;
+    }
+
     public List<EntryRatingData> getEntries() {
         return entries;
     }

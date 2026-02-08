@@ -3,6 +3,7 @@ package com.example.userauth.controller;
 import com.example.userauth.dto.CompetitionRequest;
 import com.example.userauth.dto.CompetitionResponse;
 import com.example.userauth.dto.EntryRequest;
+import com.example.userauth.dto.EntryStatusUpdateRequest;
 import com.example.userauth.dto.EntrySubmitResponse;
 import com.example.userauth.entity.User;
 import com.example.userauth.repository.UserRepository;
@@ -296,6 +297,54 @@ public class CompetitionController {
             logger.error("Error submitting entry to competition with id: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse("提交失败，请稍后重试"));
+        }
+    }
+    
+    /**
+     * Get all entries for a competition (for review)
+     * Requires admin privileges
+     */
+    @GetMapping("/{id}/entries")
+    @RequireAdmin(message = "只有管理员可以查看参赛作品列表")
+    public ResponseEntity<List<CompetitionResponse.EntryResponse>> getCompetitionEntries(@PathVariable Long id) {
+        logger.info("GET /api/competitions/{}/entries - Fetching entries for competition", id);
+        
+        try {
+            List<CompetitionResponse.EntryResponse> entries = competitionService.getCompetitionEntries(id);
+            logger.info("Successfully retrieved {} entries for competition {}", entries.size(), id);
+            return ResponseEntity.ok(entries);
+        } catch (IllegalArgumentException e) {
+            logger.warn("Competition not found: {}", id);
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            logger.error("Error fetching entries for competition {}", id, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    /**
+     * Update entry status (approve/reject)
+     * Requires admin privileges
+     */
+    @PutMapping("/{competitionId}/entries/{entryId}/status")
+    @RequireAdmin(message = "只有管理员可以审核作品")
+    public ResponseEntity<Void> updateEntryStatus(
+            @PathVariable Long competitionId,
+            @PathVariable Long entryId,
+            @RequestBody EntryStatusUpdateRequest request) {
+        logger.info("PUT /api/competitions/{}/entries/{}/status - Updating entry status to {}", 
+                   competitionId, entryId, request.getStatus());
+        
+        try {
+            competitionService.updateEntryStatus(entryId, request.getStatus());
+            logger.info("Successfully updated entry {} status to {}", entryId, request.getStatus());
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid request for updating entry status: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            logger.error("Error updating entry {} status", entryId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     

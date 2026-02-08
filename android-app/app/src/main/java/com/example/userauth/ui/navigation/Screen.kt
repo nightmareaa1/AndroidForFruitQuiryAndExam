@@ -25,18 +25,19 @@ sealed class Screen(val route: String) {
     object CompetitionEdit : Screen("competition_edit/{competitionId}")
     object CompetitionAdd : Screen("competition_add")
     object Score : Screen("score/{competitionId}")
-    object Rating : Screen("rating/{competitionId}")
+    object Rating : Screen("rating/{competitionId}/{entryId}/{entryName}/{modelId}")
     object RadarDetail : Screen("radar_detail/{submissionId}")
     object DataDisplayDetail : Screen("data-display-detail/{competitionId}/{submissionId}")
     object DataDisplay : Screen("data-display/{competitionId}")
     object EntryAdd : Screen("entry-add/{competitionId}/{competitionName}")
+    object EntryReview : Screen("entry-review/{competitionId}/{competitionName}")
 
     companion object {
         fun competitionEdit(competitionId: Long): String =
             "competition_edit/$competitionId"
         
-        fun rating(competitionId: Long): String =
-            "rating/$competitionId"
+        fun rating(competitionId: Long, entryId: Long, entryName: String, modelId: Long): String =
+            "rating/$competitionId/$entryId/${java.net.URLEncoder.encode(entryName, "UTF-8")}/$modelId"
         
         fun dataDisplay(competitionId: Long): String =
             "data-display/$competitionId"
@@ -46,5 +47,8 @@ sealed class Screen(val route: String) {
         
         fun entryAdd(competitionId: Long, competitionName: String): String =
             "entry-add/$competitionId/$competitionName"
+
+        fun entryReview(competitionId: Long, competitionName: String): String =
+            "entry-review/$competitionId/${java.net.URLEncoder.encode(competitionName, "UTF-8")}"
     }
 }

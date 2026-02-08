@@ -316,6 +316,7 @@ public class CompetitionService {
     private CompetitionResponse convertToResponse(Competition competition) {
         List<CompetitionResponse.JudgeResponse> judgeResponses = competition.getJudges() != null ?
                 competition.getJudges().stream()
+                        .filter(j -> j != null && j.getJudge() != null)
                         .map(j -> new CompetitionResponse.JudgeResponse(
                                 j.getId(),
                                 j.getJudge().getId(),
@@ -324,9 +325,10 @@ public class CompetitionService {
                         ))
                         .toList() :
                 List.of();
-        
+
         List<CompetitionResponse.EntryResponse> entryResponses = competition.getEntries() != null ?
                 competition.getEntries().stream()
+                        .filter(e -> e != null && e.getStatus() != null)
                         .map(e -> new CompetitionResponse.EntryResponse(
                                 e.getId(),
                                 e.getEntryName(),
@@ -340,17 +342,20 @@ public class CompetitionService {
                         ))
                         .toList() :
                 List.of();
-        
+
+        EvaluationModel model = competition.getModel();
+        User creator = competition.getCreator();
+
         return new CompetitionResponse(
                 competition.getId(),
                 competition.getName(),
                 competition.getDescription(),
-                competition.getModel().getId(),
-                competition.getModel().getName(),
-                competition.getCreator().getId(),
-                competition.getCreator().getUsername(),
+                model != null ? model.getId() : null,
+                model != null ? model.getName() : null,
+                creator != null ? creator.getId() : null,
+                creator != null ? creator.getUsername() : null,
                 competition.getDeadline(),
-                competition.getStatus().name(),
+                competition.getStatus() != null ? competition.getStatus().name() : "UNKNOWN",
                 judgeResponses,
                 entryResponses,
                 competition.getCreatedAt(),
@@ -404,8 +409,51 @@ public class CompetitionService {
         entry.setStatus(CompetitionEntry.EntryStatus.PENDING);
         
         entry = entryRepository.save(entry);
-        
+
         logger.info("User {} submitted entry {} to competition {}", userId, entry.getId(), competitionId);
         return entry.getId();
+    }
+
+    public List<CompetitionResponse.EntryResponse> getCompetitionEntries(Long competitionId) {
+        logger.info("Fetching entries for competition {}", competitionId);
+
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(() -> new IllegalArgumentException("赛事不存在: " + competitionId));
+
+        List<CompetitionEntry> entries = entryRepository.findByCompetitionIdOrderByDisplayOrder(competitionId);
+
+        return entries.stream()
+                .map(this::convertEntryToResponse)
+                .toList();
+    }
+
+    public void updateEntryStatus(Long entryId, String status) {
+        logger.info("Updating entry {} status to {}", entryId, status);
+
+        CompetitionEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new IllegalArgumentException("作品不存在: " + entryId));
+
+        try {
+            CompetitionEntry.EntryStatus newStatus = CompetitionEntry.EntryStatus.valueOf(status);
+            entry.setStatus(newStatus);
+            entryRepository.save(entry);
+            logger.info("Successfully updated entry {} status to {}", entryId, status);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("无效的状态值: " + status);
+        }
+    }
+
+    private CompetitionResponse.EntryResponse convertEntryToResponse(CompetitionEntry entry) {
+        return new CompetitionResponse.EntryResponse(
+                entry.getId(),
+                entry.getEntryName(),
+                entry.getDescription(),
+                entry.getFilePath(),
+                entry.getDisplayOrder(),
+                entry.getStatus() != null ? entry.getStatus().name() : "PENDING",
+                entry.getContestantName(),
+                entry.getCreatedAt(),
+                entry.getUpdatedAt()
+        );
     }
 }

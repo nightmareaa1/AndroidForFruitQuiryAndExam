@@ -30,6 +30,9 @@ class DataDisplayViewModel @Inject constructor(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _modelId = MutableStateFlow<Long?>(null)
+    val modelId: StateFlow<Long?> = _modelId.asStateFlow()
+
     private var currentCompetitionId: Long = 0
 
     init {
@@ -48,6 +51,7 @@ class DataDisplayViewModel @Inject constructor(
             try {
                 val result = ratingRepository.getCompetitionRatingData(competitionId)
                 result.onSuccess { ratingData ->
+                    _modelId.value = ratingData.modelId
                     _submissions.value = ratingData.entries.map { entry ->
                         SubmissionScore(
                             id = entry.entryId.toString(),

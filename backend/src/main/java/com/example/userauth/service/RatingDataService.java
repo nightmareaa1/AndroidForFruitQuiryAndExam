@@ -39,26 +39,25 @@ public class RatingDataService {
      * Get aggregated rating data for a competition
      */
     public CompetitionRatingDataResponse getCompetitionRatingData(Long competitionId) {
-        // Validate competition exists
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new IllegalArgumentException("赛事不存在"));
-        
-        // Get all entries for the competition regardless of status
-        List<CompetitionEntry> entries = entryRepository.findByCompetitionIdOrderByDisplayOrder(competitionId);
-        
-        // Get total number of judges for this competition
+
+        List<CompetitionEntry> entries = entryRepository.findByCompetitionIdAndStatusOrderByDisplayOrder(
+                competitionId, CompetitionEntry.EntryStatus.APPROVED);
+
         long totalJudges = judgeRepository.countByCompetitionId(competitionId);
-        
+
         List<CompetitionRatingDataResponse.EntryRatingData> entryDataList = new ArrayList<>();
-        
+
         for (CompetitionEntry entry : entries) {
             CompetitionRatingDataResponse.EntryRatingData entryData = calculateEntryRatingData(entry, (int) totalJudges);
             entryDataList.add(entryData);
         }
-        
+
         return new CompetitionRatingDataResponse(
             competition.getId(),
             competition.getName(),
+            competition.getModel() != null ? competition.getModel().getId() : null,
             entryDataList
         );
     }

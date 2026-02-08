@@ -26,6 +26,7 @@ fun CompetitionManagementScreen(
     onBack: () -> Unit,
     onNavigateToEdit: (Long) -> Unit,
     onNavigateToAdd: () -> Unit,
+    onNavigateToReview: (Long, String) -> Unit,
     viewModel: CompetitionManagementViewModel = hiltViewModel(),
     modelViewModel: ModelViewModel = hiltViewModel()
 ) {
@@ -84,6 +85,7 @@ fun CompetitionManagementScreen(
                         CompetitionCard(
                             competition = competition,
                             modelName = modelName,
+                            onClick = { onNavigateToReview(competition.id, competition.name) },
                             onEdit = { onNavigateToEdit(competition.id) },
                             onDelete = {
                                 selectedCompetition = competition
@@ -132,11 +134,14 @@ fun CompetitionManagementScreen(
 private fun CompetitionCard(
     competition: Competition,
     modelName: String,
+    onClick: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(

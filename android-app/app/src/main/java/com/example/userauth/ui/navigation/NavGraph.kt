@@ -33,6 +33,7 @@ import com.example.userauth.ui.screen.RatingScreen
  * Automatically navigates to main screen if user is already logged in
  */
 import androidx.compose.material3.ExperimentalMaterial3Api
+import com.example.userauth.ui.screen.EntryReviewScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,24 +129,30 @@ fun NavGraph(navController: NavHostController) {
         ) { backStack ->
             val competitionId = backStack.arguments?.getLong("competitionId") ?: 0L
             val submissionId = backStack.arguments?.getString("submissionId") ?: ""
-            
+
             if (submissionId.isBlank()) {
                 LaunchedEffect(Unit) {
                     navController.popBackStack()
                 }
                 return@composable
             }
-            
+
             val dataViewModel: DataDisplayViewModel = hiltViewModel()
-            
+
             // Load data if not loaded
             LaunchedEffect(competitionId) {
                 dataViewModel.loadSubmissions(competitionId)
             }
-            
+
             DataDisplayDetailScreen(
                 submissionId = submissionId,
+                competitionId = competitionId,
                 onBack = { navController.popBackStack() },
+                onRateClick = { entryId, entryName, modelId ->
+                    navController.navigate(
+                        Screen.rating(competitionId, entryId, entryName, modelId)
+                    )
+                },
                 viewModel = dataViewModel
             )
         }
@@ -235,6 +242,9 @@ fun NavGraph(navController: NavHostController) {
                 onNavigateToEdit = { competitionId ->
                     navController.navigate(Screen.competitionEdit(competitionId))
                 },
+                onNavigateToReview = { competitionId, competitionName ->
+                    navController.navigate(Screen.entryReview(competitionId, competitionName))
+                },
                 onNavigateToAdd = {
                     navController.navigate(Screen.CompetitionAdd.route)
                 }
@@ -280,16 +290,25 @@ fun NavGraph(navController: NavHostController) {
         }
 
         // Rating screen for judges
-        composable(Screen.Rating.route) { backStack ->
-            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull()
-            if (competitionId == null) {
-                LaunchedEffect(Unit) {
-                    navController.popBackStack()
-                }
-                return@composable
-            }
+        composable(
+            route = Screen.Rating.route,
+            arguments = listOf(
+                navArgument("competitionId") { type = NavType.LongType },
+                navArgument("entryId") { type = NavType.LongType },
+                navArgument("entryName") { type = NavType.StringType },
+                navArgument("modelId") { type = NavType.LongType }
+            )
+        ) { backStack ->
+            val competitionId = backStack.arguments?.getLong("competitionId") ?: 0L
+            val entryId = backStack.arguments?.getLong("entryId") ?: 0L
+            val entryName = backStack.arguments?.getString("entryName") ?: ""
+            val modelId = backStack.arguments?.getLong("modelId") ?: 0L
+
             RatingScreen(
                 competitionId = competitionId,
+                entryId = entryId,
+                entryName = entryName,
+                modelId = modelId,
                 onBack = { navController.popBackStack() }
             )
         }
@@ -312,6 +331,24 @@ fun NavGraph(navController: NavHostController) {
                 onSubmissionSuccess = {
                     navController.popBackStack()
                 }
+            )
+        }
+
+        // Entry review screen - for admin to review entries
+        composable(
+            route = Screen.EntryReview.route,
+            arguments = listOf(
+                navArgument("competitionId") { type = NavType.LongType },
+                navArgument("competitionName") { type = NavType.StringType }
+            )
+        ) { backStack ->
+            val competitionId = backStack.arguments?.getLong("competitionId") ?: 0L
+            val competitionName = backStack.arguments?.getString("competitionName") ?: ""
+
+            EntryReviewScreen(
+                competitionId = competitionId,
+                competitionName = competitionName,
+                onBack = { navController.popBackStack() }
             )
         }
     }
