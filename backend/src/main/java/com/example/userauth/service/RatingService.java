@@ -65,14 +65,18 @@ public class RatingService {
         if (!entry.isApproved()) {
             throw new IllegalStateException("只能为已审核通过的作品评分");
         }
-        
+
+        User judge = userRepository.findById(judgeId)
+                .orElseThrow(() -> new IllegalArgumentException("用户不存在"));
+
         // Validate judge is authorized for this competition
-        if (!judgeRepository.existsByCompetitionIdAndJudgeId(request.getCompetitionId(), judgeId)) {
+        // Admin users are automatically granted judge permission
+        boolean isAdmin = judge.getIsAdmin() != null && judge.getIsAdmin();
+        boolean isJudge = judgeRepository.existsByCompetitionIdAndJudgeId(request.getCompetitionId(), judgeId);
+
+        if (!isAdmin && !isJudge) {
             throw new IllegalArgumentException("您不是该赛事的评委");
         }
-        
-        User judge = userRepository.findById(judgeId)
-                .orElseThrow(() -> new IllegalArgumentException("评委不存在"));
         
         // Get all parameters for the competition's evaluation model
         List<EvaluationParameter> modelParameters = parameterRepository

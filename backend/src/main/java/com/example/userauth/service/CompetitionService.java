@@ -124,12 +124,25 @@ public class CompetitionService {
         );
         
         competition = competitionRepository.save(competition);
-        
-        // Add judges if provided
+
+        List<Long> judgeIds = new java.util.ArrayList<>();
+
+        // Creator is automatically added as a judge
+        judgeIds.add(creatorId);
+
+        // Add additional judges if provided
         if (request.getJudgeIds() != null && !request.getJudgeIds().isEmpty()) {
-            addJudgesToCompetition(competition.getId(), request.getJudgeIds());
+            for (Long judgeId : request.getJudgeIds()) {
+                if (!judgeId.equals(creatorId)) {
+                    judgeIds.add(judgeId);
+                }
+            }
         }
-        
+
+        if (!judgeIds.isEmpty()) {
+            addJudgesToCompetition(competition.getId(), judgeIds);
+        }
+
         logger.info("Successfully created competition with id: {}", competition.getId());
         return convertToResponse(competition);
     }
