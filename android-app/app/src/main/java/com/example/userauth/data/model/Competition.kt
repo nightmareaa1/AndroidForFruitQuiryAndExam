@@ -6,5 +6,6 @@ data class Competition(
     val modelId: Long,
     val creatorId: Long,
     val deadline: String,
-    val status: String
+    val status: String,
+    val description: String = ""
 )

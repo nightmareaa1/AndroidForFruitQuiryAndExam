@@ -60,7 +60,7 @@ class EntryAddViewModel @Inject constructor(
                 competitionId = state.competitionId,
                 entryName = state.entryName.trim(),
                 description = state.description.trim().ifBlank { null },
-                imageUri = state.imageUri?.toString()
+                imageUri = state.imageUri
             )
             
             result.onSuccess { response ->

@@ -1,7 +1,6 @@
 package com.example.userauth.ui.screen
 
 import android.net.Uri
-import android.widget.ImageView
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -15,12 +14,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.example.userauth.viewmodel.EntryAddViewModel
-import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -121,31 +119,12 @@ fun EntryAddScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     if (uiState.imageUri != null) {
-                        // Load image using basic Android methods
-                        var bitmap by remember { mutableStateOf<android.graphics.Bitmap?>(null) }
-                        
-                        LaunchedEffect(uiState.imageUri) {
-                            try {
-                                val inputStream = uiState.imageUri?.let {
-                                    android.content.ContextWrapper(android.app.Application())
-                                        .baseContext.contentResolver.openInputStream(it)
-                                }
-                                inputStream?.use { stream ->
-                                    bitmap = android.graphics.BitmapFactory.decodeStream(stream)
-                                }
-                            } catch (e: Exception) {
-                                bitmap = null
-                            }
-                        }
-                        
-                        bitmap?.let {
-                            Image(
-                                bitmap = it.asImageBitmap(),
-                                contentDescription = "Selected image",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
+                        Image(
+                            painter = rememberAsyncImagePainter(uiState.imageUri),
+                            contentDescription = "Selected image",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
                     } else {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,

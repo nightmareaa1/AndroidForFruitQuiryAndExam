@@ -252,7 +252,10 @@ fun NavGraph(navController: NavHostController) {
         }
 
         // Competition edit route - requires admin privileges
-        composable(Screen.CompetitionEdit.route) { backStack ->
+        composable(
+            route = Screen.CompetitionEdit.route,
+            arguments = listOf(navArgument("competitionId") { type = NavType.LongType })
+        ) { backStack ->
             if (!authViewModel.isCurrentUserAdmin()) {
                 LaunchedEffect(Unit) {
                     navController.navigate(Screen.Main.route) {
@@ -261,8 +264,8 @@ fun NavGraph(navController: NavHostController) {
                 }
                 return@composable
             }
-            val competitionId = backStack.arguments?.getString("competitionId")?.toLongOrNull()
-            if (competitionId == null) {
+            val competitionId = backStack.arguments?.getLong("competitionId")
+            if (competitionId == null || competitionId == 0L) {
                 LaunchedEffect(Unit) {
                     navController.popBackStack()
                 }

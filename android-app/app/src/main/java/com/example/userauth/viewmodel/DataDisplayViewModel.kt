@@ -57,6 +57,7 @@ class DataDisplayViewModel @Inject constructor(
                             id = entry.entryId.toString(),
                             contestant = entry.contestantName,
                             title = entry.entryName,
+                            imageUrl = entry.filePath?.let { "http://10.0.2.2:8080/api/files/$it" },
                             scores = entry.parameterScores.map { param ->
                                 ScoreParameter(
                                     name = param.parameterName,

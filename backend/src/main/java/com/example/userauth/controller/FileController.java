@@ -17,7 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/files")
+@RequestMapping("/api/files")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class FileController {
 
     private final FileStorageService fileStorageService;

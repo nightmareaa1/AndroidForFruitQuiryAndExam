@@ -282,7 +282,8 @@ public class CompetitionController {
     public ResponseEntity<?> submitEntry(@PathVariable Long id,
                                         @RequestPart("entry") @Valid EntryRequest request,
                                         @RequestPart(value = "file", required = false) MultipartFile file) {
-        logger.info("POST /api/competitions/{}/submit - User submitting entry: {}", id, request.getEntryName());
+        logger.info("POST /api/competitions/{}/submit - User submitting entry: {}, file: {}", 
+            id, request.getEntryName(), file != null ? file.getOriginalFilename() : "null");
         
         try {
             User currentUser = getCurrentUser();
@@ -296,7 +297,7 @@ public class CompetitionController {
         } catch (Exception e) {
             logger.error("Error submitting entry to competition with id: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createErrorResponse("提交失败，请稍后重试"));
+                    .body(createErrorResponse("提交失败，请稍后重试: " + e.getMessage()));
         }
     }
     

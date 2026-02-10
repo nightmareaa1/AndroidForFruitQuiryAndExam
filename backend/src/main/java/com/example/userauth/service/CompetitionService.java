@@ -381,7 +381,8 @@ public class CompetitionService {
      * Any authenticated user can submit their own entry
      */
     public Long submitEntryToCompetition(Long competitionId, EntryRequest request, MultipartFile file, Long userId) {
-        logger.info("User {} submitting entry to competition {}", userId, competitionId);
+        logger.info("User {} submitting entry to competition {} with file: {}", 
+            userId, competitionId, file != null ? file.getOriginalFilename() : "null");
         
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new IllegalArgumentException("赛事不存在: " + competitionId));
@@ -402,12 +403,17 @@ public class CompetitionService {
         // Handle file upload
         String filePath = null;
         if (file != null && !file.isEmpty()) {
+            logger.info("Processing file: name={}, size={}, contentType={}", 
+                file.getOriginalFilename(), file.getSize(), file.getContentType());
             try {
                 filePath = fileStorageService.storeFile(file);
+                logger.info("File stored successfully: {}", filePath);
             } catch (java.io.IOException e) {
                 logger.error("Failed to store file for entry: {}", request.getEntryName(), e);
                 throw new RuntimeException("文件上传失败: " + e.getMessage(), e);
             }
+        } else {
+            logger.info("No file provided or file is empty");
         }
         
         // Create entry with contestant

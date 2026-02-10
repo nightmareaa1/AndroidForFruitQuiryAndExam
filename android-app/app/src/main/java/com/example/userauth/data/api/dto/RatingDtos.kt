@@ -62,6 +62,7 @@ data class EntryRatingDataDto(
     val entryId: Long,
     val entryName: String,
     val contestantName: String,
+    val filePath: String? = null,
     val averageTotalScore: Double,
     val numberOfRatings: Int,
     val parameterScores: List<ParameterAverageScoreDto>

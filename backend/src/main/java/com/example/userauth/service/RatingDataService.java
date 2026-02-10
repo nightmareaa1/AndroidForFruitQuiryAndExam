@@ -105,6 +105,7 @@ public class RatingDataService {
             entry.getId(),
             entry.getEntryName(),
             entry.getContestantName(),
+            entry.getFilePath(),
             averageTotalScore,
             completedRatings,
             parameterScores

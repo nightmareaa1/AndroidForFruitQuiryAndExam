@@ -65,6 +65,7 @@ public class CompetitionRatingDataResponse {
         private Long entryId;
         private String entryName;
         private String contestantName;
+        private String filePath;
         private Double averageTotalScore;
         private Integer numberOfRatings;
         private List<ParameterAverageScore> parameterScores;
@@ -73,12 +74,13 @@ public class CompetitionRatingDataResponse {
         public EntryRatingData() {}
         
         // Constructor
-        public EntryRatingData(Long entryId, String entryName, String contestantName,
+        public EntryRatingData(Long entryId, String entryName, String contestantName, String filePath,
                               Double averageTotalScore, Integer numberOfRatings,
                               List<ParameterAverageScore> parameterScores) {
             this.entryId = entryId;
             this.entryName = entryName;
             this.contestantName = contestantName;
+            this.filePath = filePath;
             this.averageTotalScore = averageTotalScore;
             this.numberOfRatings = numberOfRatings;
             this.parameterScores = parameterScores;
@@ -107,6 +109,14 @@ public class CompetitionRatingDataResponse {
         
         public void setContestantName(String contestantName) {
             this.contestantName = contestantName;
+        }
+        
+        public String getFilePath() {
+            return filePath;
+        }
+        
+        public void setFilePath(String filePath) {
+            this.filePath = filePath;
         }
         
         public Double getAverageTotalScore() {

@@ -52,7 +52,8 @@ fun CompetitionDto.toDomainModel(): Competition {
         modelId = modelId ?: 0L,
         creatorId = creatorId ?: 0L,
         deadline = deadline?.substring(0, 10) ?: "",
-        status = status ?: "ACTIVE"
+        status = status ?: "ACTIVE",
+        description = description ?: ""
     )
 }
 

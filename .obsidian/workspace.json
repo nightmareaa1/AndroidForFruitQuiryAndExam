@@ -1,0 +1,206 @@
+{
+  "main": {
+    "id": "625624f1370386d3",
+    "type": "split",
+    "children": [
+      {
+        "id": "93dc57b5b1de9e95",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "a55ae532429fc394",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "新标签页"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "5cd0f3c80ad488dd",
+    "type": "split",
+    "children": [
+      {
+        "id": "bc7caed279b0f646",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e9ffeb5ad5738005",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": true
+              },
+              "icon": "lucide-folder-closed",
+              "title": "文件列表"
+            }
+          },
+          {
+            "id": "18067f04a0e93737",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "85cd3d409ff66a77",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "2e4fd3941e57ebe4",
+    "type": "split",
+    "children": [
+      {
+        "id": "bca624f618bea308",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "dbe9801c6c701c0e",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "2026-02-09.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 2026-02-09"
+            }
+          },
+          {
+            "id": "82cf0188cbda97d8",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "2026-02-09.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 2026-02-09"
+            }
+          },
+          {
+            "id": "0a5555f6c280bb47",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "3a5d1d33a8289704",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "7569d8bfc377d850",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "2026-02-09.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of 2026-02-09"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false
+    }
+  },
+  "active": "a55ae532429fc394",
+  "lastOpenFiles": [
+    "docs/uidesign/optimized_branded.md",
+    "docs/development/optimized_branded.md",
+    "android-app/app/build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs/com/example/userauth/domain/model/User.class",
+    "android-app/app/build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs/com/example/userauth/domain/model/AuthToken.class",
+    "android-app/app/build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs/com/example/userauth/domain/model",
+    "android-app/app/build/intermediates/classes/debug/transformDebugClassesWithAsm/dirs/com/example/userauth/domain",
+    "CUsersmamour.configopencodeskillsandroid-fruit-debuggingreferences",
+    "CUsersmamour.configopencodeskillsandroid-fruit-debuggingscripts",
+    "android-app/app/build/intermediates/apk_ide_redirect_file/debug/redirect.txt",
+    "android-app/app/build/intermediates/apk_ide_redirect_file/debug",
+    "android-app/app/build/intermediates/apk_ide_redirect_file",
+    "android-app/app/build/intermediates/apk/debug/output-metadata.json",
+    "docs/plans/2026-02-09-android-ui-brand-enhancement.md",
+    "2026-02-09.md",
+    "Untitled.canvas",
+    "docs/development/problem-solving-guide.md",
+    "backend/src/test/README.md",
+    "PROJECT_SUMMARY.md",
+    "PROPERTY_TESTING_SOLUTION.md",
+    "PROJECT_STRUCTURE.md",
+    "DOCKER_SETUP_SUCCESS.md"
+  ]
+}

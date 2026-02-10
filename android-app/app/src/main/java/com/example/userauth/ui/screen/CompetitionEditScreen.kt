@@ -23,23 +23,41 @@ fun CompetitionEditScreen(
     viewModel: CompetitionManagementViewModel = hiltViewModel(),
     modelViewModel: ModelViewModel = hiltViewModel()
 ) {
-    val competition = viewModel.getCompetitionById(competitionId)
+    val competitions by viewModel.competitions.collectAsState()
     val models by modelViewModel.models.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     // Force refresh when entering the screen
-    LaunchedEffect(Unit) {
+    LaunchedEffect(competitionId) {
         viewModel.loadCompetitions()
         modelViewModel.loadModels()
+    }
+
+    // Find competition from loaded list
+    val competition = remember(competitions, competitionId) {
+        competitions.find { it.id == competitionId }
+    }
+
+    // Show loading or error state while waiting for competition to load
+    if (competition == null && isLoading) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+        return@CompetitionEditScreen
     }
 
     if (competition == null) {
         LaunchedEffect(Unit) {
             onBack()
         }
-        return
+        return@CompetitionEditScreen
     }
 
     var name by remember { mutableStateOf(competition.name) }
+    var description by remember { mutableStateOf(competition.description) }
     var deadline by remember { mutableStateOf(competition.deadline) }
     var selectedModelId by remember { mutableStateOf(competition.modelId) }
     var showModelDropdown by remember { mutableStateOf(false) }
@@ -69,6 +87,15 @@ fun CompetitionEditScreen(
                 onValueChange = { name = it },
                 label = { Text("赛事名称") },
                 modifier = Modifier.fillMaxWidth()
+            )
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("赛事介绍") },
+                modifier = Modifier.fillMaxWidth(),
+                minLines = 3,
+                maxLines = 5
             )
 
             Box(modifier = Modifier.fillMaxWidth()) {
@@ -127,6 +154,7 @@ fun CompetitionEditScreen(
                     viewModel.updateCompetition(
                         competition.copy(
                             name = name,
+                            description = description,
                             deadline = deadline,
                             modelId = selectedModelId
                         )

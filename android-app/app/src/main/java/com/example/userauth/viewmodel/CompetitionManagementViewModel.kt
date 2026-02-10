@@ -75,9 +75,9 @@ class CompetitionManagementViewModel @Inject constructor(
             repository.updateCompetition(
                 id = updatedCompetition.id,
                 name = updatedCompetition.name,
+                description = updatedCompetition.description,
                 deadline = updatedCompetition.deadline,
-                modelId = updatedCompetition.modelId,
-                description = ""
+                modelId = updatedCompetition.modelId
             )
                 .onSuccess {
                     loadCompetitions()

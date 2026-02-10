@@ -1,27 +1,43 @@
 package com.example.userauth.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.RateReview
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.userauth.data.model.Competition
+import com.example.userauth.ui.components.CompetitionEmptyState
+import com.example.userauth.ui.components.ShimmerCard
+import com.example.userauth.ui.components.StatusChip
+import com.example.userauth.ui.components.StatusType
+import com.example.userauth.ui.theme.*
 import com.example.userauth.viewmodel.CompetitionViewModel
 
-/**
- * Competition listing screen
- * Displays available competitions for users
- * Requirements: 6.3.1-6.3.16
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CompetitionScreen(
@@ -37,95 +53,77 @@ fun CompetitionScreen(
 
     Scaffold(
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "Back"
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "赛事评价",
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            // Error message
-            errorMessage?.let { error ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
+            TopAppBar(
+                title = {
                     Text(
-                        text = error,
-                        modifier = Modifier.padding(16.dp),
-                        color = MaterialTheme.colorScheme.onErrorContainer
+                        text = "赛事评价",
+                        style = MaterialTheme.typography.titleLarge
                     )
-                }
-            }
-
-            // Loading indicator
-            if (isLoading) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            } else if (competitions.isEmpty()) {
-                // Empty state
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = "暂无赛事",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "请稍后再试或联系管理员",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "返回"
                         )
                     }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Surface
+                )
+            )
+        }
+    ) { padding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            when {
+                isLoading -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(Spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                    ) {
+                        items(3) {
+                            ShimmerCard(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(140.dp)
+                            )
+                        }
+                    }
                 }
-            } else {
-                // Competition list
-                LazyColumn(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    items(competitions) { competition ->
-                        CompetitionCard(
-                            competition = competition,
-                            onClick = { onCompetitionClick(competition.id) },
-                            onNavigateToDataDisplay = { onNavigateToDataDisplay(competition.id) },
-                            onNavigateToEntryAdd = { id, name -> onNavigateToEntryAdd(id, name) }
-                        )
+
+                errorMessage != null -> {
+                    CompetitionEmptyState(
+                        onRefresh = { viewModel.loadCompetitions() }
+                    )
+                }
+
+                competitions.isEmpty() -> {
+                    CompetitionEmptyState(
+                        onRefresh = { viewModel.loadCompetitions() }
+                    )
+                }
+
+                else -> {
+                    LazyColumn(
+                        contentPadding = PaddingValues(Spacing.md),
+                        verticalArrangement = Arrangement.spacedBy(Spacing.md)
+                    ) {
+                        items(competitions) { competition ->
+                            BrandCompetitionCard(
+                                competition = competition,
+                                onClick = { onCompetitionClick(competition.id) },
+                                onNavigateToDataDisplay = {
+                                    onNavigateToDataDisplay(competition.id)
+                                },
+                                onNavigateToEntryAdd = {
+                                    onNavigateToEntryAdd(competition.id, competition.name)
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -135,97 +133,136 @@ fun CompetitionScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun CompetitionCard(
+private fun BrandCompetitionCard(
     competition: Competition,
-    onClick: (Long) -> Unit,
-    onNavigateToDataDisplay: (Long) -> Unit = {},
-    onNavigateToEntryAdd: (Long, String) -> Unit = { _, _ -> }
+    onClick: () -> Unit,
+    onNavigateToDataDisplay: () -> Unit,
+    onNavigateToEntryAdd: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        onClick = { expanded = !expanded }
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = competition.name,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "截止时间: ${competition.deadline}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    StatusChip(status = competition.status)
-                }
-            }
+    val accentColor = when (competition.status.uppercase()) {
+        "ACTIVE" -> Success
+        "PENDING" -> Warning
+        "ENDED" -> OnSurfaceVariant
+        else -> Primary
+    }
 
-            if (expanded) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Divider()
-                Spacer(modifier = Modifier.height(12.dp))
-                
-                Column(
+    val statusType = when (competition.status.uppercase()) {
+        "ACTIVE" -> StatusType.ACTIVE
+        "PENDING" -> StatusType.PENDING
+        "ENDED" -> StatusType.ENDED
+        else -> StatusType.INFO
+    }
+
+    Card(
+        onClick = { expanded = !expanded },
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(CornerRadius.large),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (expanded) 4.dp else 2.dp
+        )
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(DecorationSize.stripHeight)
+                    .background(accentColor)
+            )
+
+            Column(
+                modifier = Modifier.padding(Padding.card)
+            ) {
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalAlignment = Alignment.Top
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Surface(
+                        modifier = Modifier.size(56.dp),
+                        shape = RoundedCornerShape(CornerRadius.medium),
+                        color = accentColor.copy(alpha = 0.1f)
                     ) {
-                        OutlinedButton(
-                            onClick = { onNavigateToDataDisplay(competition.id) },
-                            modifier = Modifier.weight(1f)
+                        Icon(
+                            imageVector = Icons.Default.EmojiEvents,
+                            contentDescription = null,
+                            modifier = Modifier.padding(12.dp),
+                            tint = accentColor
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(Spacing.md))
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = competition.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = OnSurface,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(Spacing.xs))
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Assessment,
+                                imageVector = Icons.Default.Schedule,
                                 contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(14.dp),
+                                tint = OnSurfaceVariant
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("查看数据")
-                        }
-                        
-                        Button(
-                            onClick = { onClick(competition.id) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.RateReview,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                            Text(
+                                text = "截止: ${competition.deadline}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = OnSurfaceVariant
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("评分")
                         }
                     }
-                    
-                    // Submit entry button (only for active competitions)
-                    if (competition.status.uppercase() == "ACTIVE") {
-                        OutlinedButton(
-                            onClick = { onNavigateToEntryAdd(competition.id, competition.name) },
-                            modifier = Modifier.fillMaxWidth()
+
+                    StatusChip(
+                        text = when (competition.status.uppercase()) {
+                            "ACTIVE" -> "进行中"
+                            "PENDING" -> "待开始"
+                            "ENDED" -> "已结束"
+                            else -> competition.status
+                        },
+                        status = statusType
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = expanded,
+                    enter = expandVertically() + fadeIn(),
+                    exit = shrinkVertically() + fadeOut()
+                ) {
+                    Column {
+                        Spacer(modifier = Modifier.height(Spacing.md))
+                        Divider(color = Outline.copy(alpha = 0.3f))
+                        Spacer(modifier = Modifier.height(Spacing.md))
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
+                            IconActionButton(
+                                icon = Icons.Default.Assessment,
+                                label = "数据",
+                                onClick = onNavigateToDataDisplay
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("提交参赛作品")
+                            IconActionButton(
+                                icon = Icons.Default.RateReview,
+                                label = "评分",
+                                onClick = onClick
+                            )
+                            if (competition.status.uppercase() == "ACTIVE") {
+                                IconActionButton(
+                                    icon = Icons.Default.Add,
+                                    label = "提交",
+                                    onClick = onNavigateToEntryAdd
+                                )
+                            }
                         }
                     }
                 }
@@ -235,23 +272,32 @@ private fun CompetitionCard(
 }
 
 @Composable
-private fun StatusChip(status: String) {
-    val (color, text) = when (status.uppercase()) {
-        "ACTIVE" -> MaterialTheme.colorScheme.primary to "进行中"
-        "ENDED" -> MaterialTheme.colorScheme.error to "已结束"
-        "PENDING" -> MaterialTheme.colorScheme.secondary to "待开始"
-        else -> MaterialTheme.colorScheme.outline to status
-    }
-    
-    Surface(
-        color = color.copy(alpha = 0.1f),
-        shape = MaterialTheme.shapes.small
+private fun IconActionButton(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = RoundedCornerShape(CornerRadius.medium),
+            color = Primary.copy(alpha = 0.1f)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.padding(12.dp),
+                tint = Primary
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+            text = label,
             style = MaterialTheme.typography.labelSmall,
-            color = color
+            color = OnSurfaceVariant
         )
     }
 }

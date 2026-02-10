@@ -1,5 +1,8 @@
 package com.example.userauth.data.repository
 
+import android.content.Context
+import android.net.Uri
+import android.provider.OpenableColumns
 import com.example.userauth.data.api.CompetitionApi
 import com.example.userauth.data.api.dto.CompetitionDto
 import com.example.userauth.data.api.dto.CompetitionRequest
@@ -8,13 +11,18 @@ import com.example.userauth.data.api.dto.EntryRequestDto
 import com.example.userauth.data.api.dto.EntryStatusUpdateRequest
 import com.example.userauth.data.api.dto.EntrySubmitResponseDto
 import com.example.userauth.data.model.Competition
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class CompetitionRepository @Inject constructor(
-    private val api: CompetitionApi
+    private val api: CompetitionApi,
+    @ApplicationContext private val context: Context
 ) {
     suspend fun getAllCompetitions(): Result<List<Competition>> {
         return try {
@@ -118,22 +126,38 @@ class CompetitionRepository @Inject constructor(
     /**
      * Submit entry to competition
      */
-    suspend fun submitEntry(competitionId: Long, entryName: String, description: String?, imageUri: String?): Result<EntrySubmitResponseDto> {
+    suspend fun submitEntry(competitionId: Long, entryName: String, description: String?, imageUri: Uri?): Result<EntrySubmitResponseDto> {
         return try {
             val request = EntryRequestDto(
                 entryName = entryName,
                 description = description
             )
 
-            val filePart = imageUri?.let { uri ->
-                val imageFile = java.io.File(uri)
-                if (imageFile.exists()) {
-                    okhttp3.MultipartBody.Part.createFormData(
-                        "file",
-                        imageFile.name,
-                        okhttp3.RequestBody.create("image/*".toMediaType(), imageFile)
-                    )
-                } else null
+            // Handle file upload if imageUri is provided
+            val filePart: MultipartBody.Part? = imageUri?.let { uri ->
+                try {
+                    // Get file name and MIME type from URI
+                    val mimeType = context.contentResolver.getType(uri)
+                    val fileName = getFileName(uri) ?: "image_${System.currentTimeMillis()}.jpg"
+                    val mediaType = (mimeType ?: "image/*").toMediaType()
+                    
+                    // Read file content
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val fileBytes = inputStream?.use { it.readBytes() }
+                    
+                    if (fileBytes != null && fileBytes.isNotEmpty()) {
+                        val requestBody = okhttp3.RequestBody.create(mediaType, fileBytes)
+                        MultipartBody.Part.createFormData(
+                            "file",
+                            fileName,
+                            requestBody
+                        )
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    null
+                }
             }
 
             val response = api.submitEntry(competitionId, request, filePart)
@@ -148,6 +172,29 @@ class CompetitionRepository @Inject constructor(
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+    
+    private fun getFileName(uri: Uri): String? {
+        var result: String? = null
+        if (uri.scheme == "content") {
+            val cursor = context.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index >= 0) {
+                        result = it.getString(index)
+                    }
+                }
+            }
+        }
+        if (result == null) {
+            result = uri.path
+            val cut = result?.lastIndexOf('/')
+            if (cut != null && cut != -1) {
+                result = result?.substring(cut + 1)
+            }
+        }
+        return result
     }
 
     suspend fun getCompetitionEntries(competitionId: Long): Result<List<EntryDto>> {
