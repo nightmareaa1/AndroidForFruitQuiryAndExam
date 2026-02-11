@@ -349,6 +349,7 @@ public class CompetitionService {
                                 e.getFilePath(),
                                 e.getDisplayOrder(),
                                 e.getStatus().name(),
+                                e.getContestant() != null ? e.getContestant().getId() : null,
                                 e.getContestant() != null ? e.getContestant().getUsername() : null,
                                 e.getCreatedAt(),
                                 e.getUpdatedAt()
@@ -470,9 +471,88 @@ public class CompetitionService {
                 entry.getFilePath(),
                 entry.getDisplayOrder(),
                 entry.getStatus() != null ? entry.getStatus().name() : "PENDING",
+                entry.getContestant() != null ? entry.getContestant().getId() : null,
                 entry.getContestantName(),
                 entry.getCreatedAt(),
                 entry.getUpdatedAt()
         );
+    }
+
+    /**
+     * Delete entry from competition
+     * Only admin or the contestant who submitted the entry can delete
+     */
+    public void deleteEntry(Long entryId, Long userId, boolean isAdmin) {
+        logger.info("Deleting entry {} by user {}, isAdmin: {}", entryId, userId, isAdmin);
+
+        CompetitionEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new IllegalArgumentException("作品不存在: " + entryId));
+
+        // Check permission: admin or the contestant who submitted
+        Long contestantId = entry.getContestant() != null ? entry.getContestant().getId() : null;
+        if (!isAdmin && (contestantId == null || !contestantId.equals(userId))) {
+            throw new IllegalArgumentException("没有权限删除此作品");
+        }
+
+        // Delete associated file if exists
+        if (entry.getFilePath() != null && !entry.getFilePath().isEmpty()) {
+            try {
+                fileStorageService.deleteFile(entry.getFilePath());
+            } catch (Exception e) {
+                logger.warn("Failed to delete file for entry {}: {}", entryId, e.getMessage());
+            }
+        }
+
+        entryRepository.delete(entry);
+        logger.info("Successfully deleted entry {}", entryId);
+    }
+
+    /**
+     * Update entry information
+     * Only admin or the contestant who submitted the entry can update
+     */
+    public void updateEntry(Long entryId, EntryRequest request, MultipartFile file, Long userId, boolean isAdmin) {
+        logger.info("Updating entry {} by user {}, isAdmin: {}", entryId, userId, isAdmin);
+
+        CompetitionEntry entry = entryRepository.findById(entryId)
+                .orElseThrow(() -> new IllegalArgumentException("作品不存在: " + entryId));
+
+        // Check permission: admin or the contestant who submitted
+        Long contestantId = entry.getContestant() != null ? entry.getContestant().getId() : null;
+        if (!isAdmin && (contestantId == null || !contestantId.equals(userId))) {
+            throw new IllegalArgumentException("没有权限修改此作品");
+        }
+
+        // Update entry name and description
+        if (request.getEntryName() != null && !request.getEntryName().isEmpty()) {
+            entry.setEntryName(request.getEntryName());
+        }
+        if (request.getDescription() != null) {
+            entry.setDescription(request.getDescription());
+        }
+
+        // Handle file upload if provided
+        if (file != null && !file.isEmpty()) {
+            // Delete old file if exists
+            if (entry.getFilePath() != null && !entry.getFilePath().isEmpty()) {
+                try {
+                    fileStorageService.deleteFile(entry.getFilePath());
+                } catch (Exception e) {
+                    logger.warn("Failed to delete old file for entry {}: {}", entryId, e.getMessage());
+                }
+            }
+
+            // Store new file
+            try {
+                String filePath = fileStorageService.storeFile(file);
+                entry.setFilePath(filePath);
+            } catch (Exception e) {
+                logger.error("Failed to store file for entry: {}", entryId, e);
+                throw new RuntimeException("文件上传失败: " + e.getMessage());
+            }
+        }
+
+        entryRepository.save(entry);
+        logger.info("Successfully updated entry {}", entryId);
     }
 }

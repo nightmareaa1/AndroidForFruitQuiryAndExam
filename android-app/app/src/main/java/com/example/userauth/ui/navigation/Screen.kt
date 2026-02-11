@@ -20,6 +20,7 @@ sealed class Screen(val route: String) {
     object Admin : Screen("admin")
     object Competition : Screen("competition")
     object FruitNutrition : Screen("fruit_nutrition")
+    object FruitManagement : Screen("fruit_management")
     object ModelManagement : Screen("model_management")
     object CompetitionManagement : Screen("competition_management")
     object CompetitionEdit : Screen("competition_edit/{competitionId}")
@@ -31,24 +32,32 @@ sealed class Screen(val route: String) {
     object DataDisplay : Screen("data-display/{competitionId}")
     object EntryAdd : Screen("entry-add/{competitionId}/{competitionName}")
     object EntryReview : Screen("entry-review/{competitionId}/{competitionName}")
+    object EntryEdit : Screen("entry-edit/{competitionId}/{competitionName}")
+    object MyEntries : Screen("my-entries/{competitionId}/{competitionName}")
 
     companion object {
         fun competitionEdit(competitionId: Long): String =
             "competition_edit/$competitionId"
-        
+
         fun rating(competitionId: Long, entryId: Long, entryName: String, modelId: Long): String =
             "rating/$competitionId/$entryId/${java.net.URLEncoder.encode(entryName, "UTF-8")}/$modelId"
-        
+
         fun dataDisplay(competitionId: Long): String =
             "data-display/$competitionId"
-        
+
         fun dataDisplayDetail(competitionId: Long, submissionId: String): String =
             "data-display-detail/$competitionId/$submissionId"
-        
+
         fun entryAdd(competitionId: Long, competitionName: String): String =
             "entry-add/$competitionId/$competitionName"
 
         fun entryReview(competitionId: Long, competitionName: String): String =
             "entry-review/$competitionId/${java.net.URLEncoder.encode(competitionName, "UTF-8")}"
+
+        fun entryEdit(competitionId: Long, competitionName: String): String =
+            "entry-edit/$competitionId/${java.net.URLEncoder.encode(competitionName, "UTF-8")}"
+
+        fun myEntries(competitionId: Long, competitionName: String): String =
+            "my-entries/$competitionId/${java.net.URLEncoder.encode(competitionName, "UTF-8")}"
     }
 }

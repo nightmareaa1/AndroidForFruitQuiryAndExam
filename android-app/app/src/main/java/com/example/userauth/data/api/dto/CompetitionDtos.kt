@@ -32,6 +32,7 @@ data class EntryDto(
     val filePath: String?,
     val displayOrder: Int?,
     val status: String?,
+    val contestantId: Long?,
     val contestantName: String?,
     val createdAt: String?,
     val updatedAt: String?

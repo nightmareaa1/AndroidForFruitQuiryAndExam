@@ -224,6 +224,68 @@ class CompetitionRepository @Inject constructor(
             Result.failure(e)
         }
     }
+
+    suspend fun deleteEntry(competitionId: Long, entryId: Long): Result<Unit> {
+        return try {
+            val response = api.deleteEntry(competitionId, entryId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("删除作品失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updateEntry(
+        competitionId: Long,
+        entryId: Long,
+        entryName: String,
+        description: String?,
+        imageUri: Uri?
+    ): Result<Unit> {
+        return try {
+            val request = EntryRequestDto(
+                entryName = entryName,
+                description = description
+            )
+
+            val filePart: MultipartBody.Part? = imageUri?.let { uri ->
+                try {
+                    val mimeType = context.contentResolver.getType(uri)
+                    val fileName = getFileName(uri) ?: "image_${System.currentTimeMillis()}.jpg"
+                    val mediaType = (mimeType ?: "image/*").toMediaType()
+
+                    val inputStream = context.contentResolver.openInputStream(uri)
+                    val fileBytes = inputStream?.use { it.readBytes() }
+
+                    if (fileBytes != null && fileBytes.isNotEmpty()) {
+                        val requestBody = okhttp3.RequestBody.create(mediaType, fileBytes)
+                        MultipartBody.Part.createFormData(
+                            "file",
+                            fileName,
+                            requestBody
+                        )
+                    } else {
+                        null
+                    }
+                } catch (e: Exception) {
+                    null
+                }
+            }
+
+            val response = api.updateEntry(competitionId, entryId, request, filePart)
+
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("更新作品失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }
 
 fun CompetitionDto.toDomainModel(): Competition {

@@ -1,146 +1,231 @@
 package com.example.userauth.ui.screen
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.testTag
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.userauth.viewmodel.FruitNutritionViewModel
-import com.example.userauth.data.model.QueryDataItem
-import com.example.userauth.data.model.FruitNutrition
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.TextField
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.Color
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.userauth.data.api.FruitDataResponse
+import com.example.userauth.viewmodel.FruitDataViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FruitNutritionScreen(
     onBack: () -> Unit,
-    onFruitClick: (String) -> Unit = {},
-    viewModel: FruitNutritionViewModel = viewModel()
+    viewModel: FruitDataViewModel = hiltViewModel()
 ) {
-    val fruits by viewModel.fruits.collectAsState()
-    val results by viewModel.queryResults.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    var typeExpanded by remember { mutableStateOf(false) }
-    var selectedType by remember { mutableStateOf("营养成分") }
-    val typeOptions = listOf("营养成分", "风味")
+    var dataType by remember { mutableStateOf<String?>(null) }
+    var showDataTypeDropdown by remember { mutableStateOf(false) }
+    var showFruitDropdown by remember { mutableStateOf(false) }
 
-    var fruitExpanded by remember { mutableStateOf(false) }
-    var selectedFruit by remember { mutableStateOf("芒果") }
-    val fruitOptions = listOf("芒果", "香蕉")
+    LaunchedEffect(uiState.error) {
+        uiState.error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("水果营养查询") },
+                title = { Text("水果数据查询") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "返回")
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-        Column(modifier = Modifier.padding(padding).fillMaxSize()) {
-            Row(
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            // 查询条件
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .padding(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                // Type dropdown
-                Box {
-                    Text(text = selectedType, modifier = Modifier
-                        .padding(12.dp)
-                        .testTag("type-dropdown")
-                        .clickable { typeExpanded = true }
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "查询条件",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
                     )
-                    DropdownMenu(
-                        expanded = typeExpanded,
-                        onDismissRequest = { typeExpanded = false }
-                    ) {
-                        typeOptions.forEach { opt ->
-                            DropdownMenuItem(
-                                text = { Text(text = opt) },
-                                onClick = {
-                                    selectedType = opt
-                                    typeExpanded = false
-                                }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 数据类型选择
+                    Box {
+                        OutlinedButton(
+                            onClick = { showDataTypeDropdown = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = dataType ?: "选择数据类型",
+                                modifier = Modifier.weight(1f)
                             )
                         }
-                    }
-                }
-                // Fruit dropdown
-                Box {
-                Text(text = selectedFruit, modifier = Modifier
-                    .padding(12.dp)
-                    .testTag("fruit-dropdown")
-                    .clickable { fruitExpanded = true })
-                    DropdownMenu(
-                        expanded = fruitExpanded,
-                        onDismissRequest = { fruitExpanded = false }
-                    ) {
-                        fruitOptions.forEach { f ->
-                            DropdownMenuItem(
-                                text = { Text(text = f) },
-                                onClick = {
-                                    selectedFruit = f
-                                    fruitExpanded = false
-                                }
-                            )
+                        DropdownMenu(
+                            expanded = showDataTypeDropdown,
+                            onDismissRequest = { showDataTypeDropdown = false }
+                        ) {
+                            uiState.dataTypes.forEach { type ->
+                                DropdownMenuItem(
+                                    text = { Text(type) },
+                                    onClick = {
+                                        dataType = type
+                                        showDataTypeDropdown = false
+                                    }
+                                )
+                            }
                         }
                     }
-                }
-                Button(onClick = { viewModel.query(selectedType, selectedFruit) }, modifier = Modifier.testTag("query-button")) {
-                    Text("查询")
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Box {
+                        OutlinedButton(
+                            onClick = { showFruitDropdown = true },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = uiState.selectedFruit?.name ?: "选择水果",
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showFruitDropdown,
+                            onDismissRequest = { showFruitDropdown = false }
+                        ) {
+                            uiState.fruits.forEach { fruit ->
+                                DropdownMenuItem(
+                                    text = { Text(fruit.name) },
+                                    onClick = {
+                                        viewModel.selectFruit(fruit)
+                                        showFruitDropdown = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = {
+                            val fruitName = uiState.selectedFruit?.name
+                            val type = dataType
+                            if (fruitName != null && type != null) {
+                                viewModel.query(fruitName, type)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = dataType != null && uiState.selectedFruit != null && !uiState.isLoading
+                    ) {
+                        Icon(Icons.Default.Search, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("查询")
+                    }
                 }
             }
 
-            // Results table header
-            if (results.isNotEmpty()) {
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp).testTag("results-header")) {
-                    Text(text = "成分名称", modifier = Modifier.weight(1f))
-                    Text(text = "数值", modifier = Modifier.width(120.dp))
-                }
-                Divider()
-                LazyColumn {
-                    items(results) { item: QueryDataItem ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 8.dp, vertical = 6.dp)
-                        ) {
-                            Text(text = item.componentName, modifier = Modifier.weight(1f))
-                            Text(text = item.value.toString(), modifier = Modifier.width(120.dp))
+            // 查询结果
+            if (uiState.queryResults.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "查询结果",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (uiState.isLoading) {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(uiState.queryResults) { result ->
+                            ResultCard(result = result)
                         }
                     }
                 }
-            } else {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("无查询结果", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            } else if (uiState.selectedFruit != null && !uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "暂无数据，请先选择水果再查询",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "请选择水果进行查询",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResultCard(
+    result: FruitDataResponse
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = result.fruitName,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            result.data.forEach { (key, value) ->
+                Text(
+                    text = "$key: $value",
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }

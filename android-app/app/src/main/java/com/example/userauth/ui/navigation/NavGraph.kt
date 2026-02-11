@@ -34,6 +34,8 @@ import com.example.userauth.ui.screen.RatingScreen
  */
 import androidx.compose.material3.ExperimentalMaterial3Api
 import com.example.userauth.ui.screen.EntryReviewScreen
+import com.example.userauth.ui.screen.EntryEditScreen
+import com.example.userauth.ui.screen.FruitManagementScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,7 +173,8 @@ fun NavGraph(navController: NavHostController) {
             AdminScreen(
                 onBack = { navController.popBackStack() },
                 onNavigateToModelManagement = { navController.navigate(Screen.ModelManagement.route) },
-                onNavigateToCompetitionManagement = { navController.navigate(Screen.CompetitionManagement.route) }
+                onNavigateToCompetitionManagement = { navController.navigate(Screen.CompetitionManagement.route) },
+                onNavigateToFruitManagement = { navController.navigate(Screen.FruitManagement.route) }
             )
         }
         // Model management route - requires admin privileges
@@ -206,9 +209,6 @@ fun NavGraph(navController: NavHostController) {
         composable(Screen.Competition.route) {
             CompetitionScreen(
                 onBack = { navController.popBackStack() },
-                onCompetitionClick = { competitionId ->
-                    navController.navigate(Screen.Score.route.replace("{competitionId}", competitionId.toString()))
-                },
                 onNavigateToDataDisplay = { competitionId ->
                     navController.navigate(Screen.DataDisplay.route.replace("{competitionId}", competitionId.toString()))
                 },
@@ -216,6 +216,9 @@ fun NavGraph(navController: NavHostController) {
                     navController.navigate(Screen.EntryAdd.route
                         .replace("{competitionId}", competitionId.toString())
                         .replace("{competitionName}", java.net.URLEncoder.encode(competitionName, "UTF-8")))
+                },
+                onNavigateToMyEntries = { competitionId, competitionName ->
+                    navController.navigate(Screen.myEntries(competitionId, competitionName))
                 }
             )
         }
@@ -223,10 +226,25 @@ fun NavGraph(navController: NavHostController) {
         composable(Screen.FruitNutrition.route) {
             FruitNutritionScreen(
                 onBack = { navController.popBackStack() },
-                onFruitClick = { /* optional: navigate to detail in future */ },
                 viewModel = hiltViewModel()
             )
         }
+
+        // Fruit Management screen - requires admin privileges
+        composable(Screen.FruitManagement.route) {
+            if (!authViewModel.isCurrentUserAdmin()) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.FruitManagement.route) { inclusive = true }
+                    }
+                }
+                return@composable
+            }
+            FruitManagementScreen(
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         // Competition management route - requires admin privileges
         composable(Screen.CompetitionManagement.route) {
             if (!authViewModel.isCurrentUserAdmin()) {
@@ -244,6 +262,9 @@ fun NavGraph(navController: NavHostController) {
                 },
                 onNavigateToReview = { competitionId, competitionName ->
                     navController.navigate(Screen.entryReview(competitionId, competitionName))
+                },
+                onNavigateToEditEntries = { competitionId, competitionName ->
+                    navController.navigate(Screen.entryEdit(competitionId, competitionName))
                 },
                 onNavigateToAdd = {
                     navController.navigate(Screen.CompetitionAdd.route)
@@ -352,6 +373,42 @@ fun NavGraph(navController: NavHostController) {
                 competitionId = competitionId,
                 competitionName = competitionName,
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(
+            route = Screen.EntryEdit.route,
+            arguments = listOf(
+                navArgument("competitionId") { type = NavType.LongType },
+                navArgument("competitionName") { type = NavType.StringType }
+            )
+        ) { backStack ->
+            val competitionId = backStack.arguments?.getLong("competitionId") ?: 0L
+            val competitionName = backStack.arguments?.getString("competitionName") ?: ""
+
+            EntryEditScreen(
+                competitionId = competitionId,
+                competitionName = competitionName,
+                onBack = { navController.popBackStack() },
+                showOnlyMyEntries = false
+            )
+        }
+
+        composable(
+            route = Screen.MyEntries.route,
+            arguments = listOf(
+                navArgument("competitionId") { type = NavType.LongType },
+                navArgument("competitionName") { type = NavType.StringType }
+            )
+        ) { backStack ->
+            val competitionId = backStack.arguments?.getLong("competitionId") ?: 0L
+            val competitionName = backStack.arguments?.getString("competitionName") ?: ""
+
+            EntryEditScreen(
+                competitionId = competitionId,
+                competitionName = competitionName,
+                onBack = { navController.popBackStack() },
+                showOnlyMyEntries = true
             )
         }
     }

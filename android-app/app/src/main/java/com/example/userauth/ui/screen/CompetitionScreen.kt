@@ -15,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Assessment
+import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Schedule
@@ -42,9 +43,9 @@ import com.example.userauth.viewmodel.CompetitionViewModel
 @Composable
 fun CompetitionScreen(
     onBack: () -> Unit,
-    onCompetitionClick: (Long) -> Unit = {},
     onNavigateToDataDisplay: (Long) -> Unit = {},
     onNavigateToEntryAdd: (Long, String) -> Unit = { _, _ -> },
+    onNavigateToMyEntries: (Long, String) -> Unit = { _, _ -> },
     viewModel: CompetitionViewModel = hiltViewModel()
 ) {
     val competitions by viewModel.competitions.collectAsState()
@@ -113,17 +114,19 @@ fun CompetitionScreen(
                         verticalArrangement = Arrangement.spacedBy(Spacing.md)
                     ) {
                         items(competitions) { competition ->
-                            BrandCompetitionCard(
-                                competition = competition,
-                                onClick = { onCompetitionClick(competition.id) },
-                                onNavigateToDataDisplay = {
-                                    onNavigateToDataDisplay(competition.id)
-                                },
-                                onNavigateToEntryAdd = {
-                                    onNavigateToEntryAdd(competition.id, competition.name)
-                                }
-                            )
+                    BrandCompetitionCard(
+                        competition = competition,
+                        onNavigateToDataDisplay = {
+                            onNavigateToDataDisplay(competition.id)
+                        },
+                        onNavigateToEntryAdd = {
+                            onNavigateToEntryAdd(competition.id, competition.name)
+                        },
+                        onNavigateToMyEntries = {
+                            onNavigateToMyEntries(competition.id, competition.name)
                         }
+                    )
+                }
                     }
                 }
             }
@@ -135,9 +138,9 @@ fun CompetitionScreen(
 @Composable
 private fun BrandCompetitionCard(
     competition: Competition,
-    onClick: () -> Unit,
     onNavigateToDataDisplay: () -> Unit,
-    onNavigateToEntryAdd: () -> Unit
+    onNavigateToEntryAdd: () -> Unit,
+    onNavigateToMyEntries: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -252,9 +255,9 @@ private fun BrandCompetitionCard(
                                 onClick = onNavigateToDataDisplay
                             )
                             IconActionButton(
-                                icon = Icons.Default.RateReview,
-                                label = "评分",
-                                onClick = onClick
+                                icon = Icons.Default.Collections,
+                                label = "我的作品",
+                                onClick = onNavigateToMyEntries
                             )
                             if (competition.status.uppercase() == "ACTIVE") {
                                 IconActionButton(

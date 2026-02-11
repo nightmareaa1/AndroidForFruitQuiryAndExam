@@ -333,9 +333,9 @@ public class CompetitionController {
             @PathVariable Long competitionId,
             @PathVariable Long entryId,
             @RequestBody EntryStatusUpdateRequest request) {
-        logger.info("PUT /api/competitions/{}/entries/{}/status - Updating entry status to {}", 
+        logger.info("PUT /api/competitions/{}/entries/{}/status - Updating entry status to {}",
                    competitionId, entryId, request.getStatus());
-        
+
         try {
             competitionService.updateEntryStatus(entryId, request.getStatus());
             logger.info("Successfully updated entry {} status to {}", entryId, request.getStatus());
@@ -346,6 +346,50 @@ public class CompetitionController {
         } catch (Exception e) {
             logger.error("Error updating entry {} status", entryId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @DeleteMapping("/{competitionId}/entries/{entryId}")
+    public ResponseEntity<Void> deleteEntry(
+            @PathVariable Long competitionId,
+            @PathVariable Long entryId) {
+        logger.info("DELETE /api/competitions/{}/entries/{} - Deleting entry", competitionId, entryId);
+
+        try {
+            User currentUser = getCurrentUser();
+            competitionService.deleteEntry(entryId, currentUser.getId(), currentUser.isAdmin());
+            logger.info("Successfully deleted entry {}", entryId);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid request for deleting entry: {}", e.getMessage());
+            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            logger.error("Error deleting entry {}", entryId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    @PutMapping(value = "/{competitionId}/entries/{entryId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateEntry(
+            @PathVariable Long competitionId,
+            @PathVariable Long entryId,
+            @RequestPart("entry") @Valid EntryRequest request,
+            @RequestPart(value = "file", required = false) MultipartFile file) {
+        logger.info("PUT /api/competitions/{}/entries/{} - Updating entry: {}",
+            competitionId, entryId, request.getEntryName());
+
+        try {
+            User currentUser = getCurrentUser();
+            competitionService.updateEntry(entryId, request, file, currentUser.getId(), currentUser.isAdmin());
+            logger.info("Successfully updated entry {}", entryId);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            logger.warn("Invalid request for updating entry: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage()));
+        } catch (Exception e) {
+            logger.error("Error updating entry {}", entryId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse("更新失败，请稍后重试"));
         }
     }
     

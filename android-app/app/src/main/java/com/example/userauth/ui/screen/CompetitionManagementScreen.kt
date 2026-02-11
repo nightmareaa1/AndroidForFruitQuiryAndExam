@@ -1,5 +1,10 @@
 package com.example.userauth.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,11 +14,14 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.RateReview
+import androidx.compose.material.icons.filled.Collections
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.userauth.data.model.Competition
@@ -27,6 +35,7 @@ fun CompetitionManagementScreen(
     onNavigateToEdit: (Long) -> Unit,
     onNavigateToAdd: () -> Unit,
     onNavigateToReview: (Long, String) -> Unit,
+    onNavigateToEditEntries: (Long, String) -> Unit,
     viewModel: CompetitionManagementViewModel = hiltViewModel(),
     modelViewModel: ModelViewModel = hiltViewModel()
 ) {
@@ -81,18 +90,19 @@ fun CompetitionManagementScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(competitions) { competition ->
-                        val modelName = models.find { it.id == competition.modelId.toString() }?.name ?: "未知模型"
-                        CompetitionCard(
-                            competition = competition,
-                            modelName = modelName,
-                            onClick = { onNavigateToReview(competition.id, competition.name) },
-                            onEdit = { onNavigateToEdit(competition.id) },
-                            onDelete = {
-                                selectedCompetition = competition
-                                showDeleteConfirm = true
-                            }
-                        )
-                    }
+                    val modelName = models.find { it.id == competition.modelId.toString() }?.name ?: "未知模型"
+                    CompetitionCard(
+                        competition = competition,
+                        modelName = modelName,
+                        onNavigateToEdit = { onNavigateToEdit(competition.id) },
+                        onNavigateToReview = { onNavigateToReview(competition.id, competition.name) },
+                        onNavigateToEditEntries = { onNavigateToEditEntries(competition.id, competition.name) },
+                        onDelete = {
+                            selectedCompetition = competition
+                            showDeleteConfirm = true
+                        }
+                    )
+                }
                 }
             }
         }
@@ -134,15 +144,18 @@ fun CompetitionManagementScreen(
 private fun CompetitionCard(
     competition: Competition,
     modelName: String,
-    onClick: () -> Unit,
-    onEdit: () -> Unit,
+    onNavigateToEdit: () -> Unit,
+    onNavigateToReview: () -> Unit,
+    onNavigateToEditEntries: () -> Unit,
     onDelete: () -> Unit
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .clickable { expanded = !expanded },
+        elevation = CardDefaults.cardElevation(defaultElevation = if (expanded) 4.dp else 2.dp)
     ) {
         Column(
             modifier = Modifier
@@ -166,21 +179,12 @@ private fun CompetitionCard(
                         modifier = Modifier.padding(top = 4.dp)
                     )
                 }
-                Row {
-                    IconButton(onClick = onEdit) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "编辑",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                    IconButton(onClick = onDelete) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "删除",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
+                IconButton(onClick = onDelete) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "删除",
+                        tint = MaterialTheme.colorScheme.error
+                    )
                 }
             }
 
@@ -198,7 +202,69 @@ private fun CompetitionCard(
                 )
                 StatusChip(status = competition.status)
             }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically() + fadeIn(),
+                exit = shrinkVertically() + fadeOut()
+            ) {
+                Column {
+                    Divider(modifier = Modifier.padding(vertical = 12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        IconActionButton(
+                            icon = Icons.Default.Edit,
+                            label = "编辑赛事",
+                            onClick = onNavigateToEdit
+                        )
+                        IconActionButton(
+                            icon = Icons.Default.RateReview,
+                            label = "审核作品",
+                            onClick = onNavigateToReview
+                        )
+                        IconActionButton(
+                            icon = Icons.Default.Collections,
+                            label = "编辑作品",
+                            onClick = onNavigateToEditEntries
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun IconActionButton(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.clickable(onClick = onClick)
+    ) {
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = MaterialTheme.shapes.medium,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.padding(12.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 

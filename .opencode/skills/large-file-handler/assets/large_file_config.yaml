@@ -1,0 +1,46 @@
+# large_file_config.yaml
+# Configuration for Large File Handler Skill
+
+large_file_handler:
+  # Threshold for activating large file handling (lines)
+  max_lines: 500
+  
+  # Maximum retry attempts
+  max_retries: 2
+  
+  # Strategy configurations
+  strategies:
+    four_step_anti_loop:
+      enabled: true
+      timeout: 30
+      
+    chunk_processing:
+      enabled: true
+      chunk_size: 200
+      overlap_lines: 10
+      
+    incremental_edit:
+      enabled: true
+      max_operations_per_batch: 50
+      
+    context_optimization:
+      enabled: true
+      context_lines: 50
+      
+    script_assist:
+      enabled: true
+      auto_execute: false  # Set to true for automatic script execution
+  
+  # Fallback configuration
+  fallback:
+    show_diff: true
+    suggest_tools: true
+    generate_guide: true
+  
+  # Logging configuration
+  logging:
+    level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+    log_file: "large_file_handler.log"
+    report_errors: true
+    max_log_size_mb: 10
+    backup_count: 5

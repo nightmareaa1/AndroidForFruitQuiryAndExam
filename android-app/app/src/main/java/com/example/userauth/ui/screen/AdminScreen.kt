@@ -22,6 +22,7 @@ fun AdminScreen(
     onBack: () -> Unit,
     onNavigateToModelManagement: (() -> Unit)? = null,
     onNavigateToCompetitionManagement: (() -> Unit)? = null,
+    onNavigateToFruitManagement: (() -> Unit)? = null,
     viewModel: UserViewModel = hiltViewModel()
 ) {
     val isAdmin = viewModel.isCurrentUserAdmin()
@@ -60,6 +61,13 @@ fun AdminScreen(
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     Text("赛事管理入口")
+                }
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = { onNavigateToFruitManagement?.invoke() },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("水果数据管理")
                 }
             } else {
                 Text("仅管理员可访问", fontSize = 16.sp)

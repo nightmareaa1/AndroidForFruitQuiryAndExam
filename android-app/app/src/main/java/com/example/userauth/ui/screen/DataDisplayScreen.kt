@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,8 +15,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 import com.example.userauth.viewmodel.DataDisplayViewModel
 import com.example.userauth.data.model.SubmissionScore
 
@@ -61,11 +64,30 @@ fun DataDisplayScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(64.dp)
-                                .background(Color.LightGray, MaterialTheme.shapes.small)
-                        )
+                        if (!sub.imageUrl.isNullOrBlank()) {
+                            AsyncImage(
+                                model = sub.imageUrl,
+                                contentDescription = "作品图片",
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .background(Color.LightGray, MaterialTheme.shapes.small),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .background(Color.LightGray, MaterialTheme.shapes.small),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Image,
+                                    contentDescription = "暂无图片",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                        }
                         Spacer(Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
                             Text(text = sub.contestant, style = MaterialTheme.typography.titleMedium)

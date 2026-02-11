@@ -58,11 +58,7 @@ public class FruitQueryService {
             throw new IllegalArgumentException("Invalid query type: " + type + ". Must be 'nutrition' or 'flavor'");
         }
 
-        // Check if fruit exists (support both Chinese and English names)
         Optional<Fruit> fruitOptional = fruitRepository.findByName(fruitName);
-        if (fruitOptional.isEmpty()) {
-            fruitOptional = fruitRepository.findByEnName(fruitName);
-        }
         if (fruitOptional.isEmpty()) {
             logger.warn("Fruit not found: {}", fruitName);
             throw new RuntimeException("Fruit not found: " + fruitName);

@@ -1,0 +1,2 @@
+-- Remove en_name column from fruits table
+-- Note: Column already dropped in previous migration, this is a no-op for Flyway consistency

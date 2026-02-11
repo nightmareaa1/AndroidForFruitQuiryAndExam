@@ -53,7 +53,12 @@ class EntryReviewViewModel @Inject constructor(
             competitionRepository.updateEntryStatus(competitionId, entryId, status)
                 .onSuccess {
                     _updateSuccess.value = true
-                    loadEntries(competitionId)
+                    if (status == "APPROVED" || status == "REJECTED") {
+                        _entries.value = _entries.value.filter { it.id != entryId }
+                    } else {
+                        loadEntries(competitionId)
+                    }
+                    _isLoading.value = false
                 }
                 .onFailure { e ->
                     _error.value = "更新状态失败: ${e.message}"

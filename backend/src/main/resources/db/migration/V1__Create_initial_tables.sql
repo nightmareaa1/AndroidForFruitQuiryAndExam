@@ -16,11 +16,9 @@ CREATE TABLE users (
 CREATE TABLE fruits (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    en_name VARCHAR(100) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uk_name (name),
-    UNIQUE KEY uk_en_name (en_name)
+    UNIQUE KEY uk_name (name)
 );
 
 -- Evaluation models table

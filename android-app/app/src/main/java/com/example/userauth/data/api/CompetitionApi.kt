@@ -47,4 +47,19 @@ interface CompetitionApi {
         @Path("entryId") entryId: Long,
         @Body request: EntryStatusUpdateRequest
     ): Response<Void>
+
+    @DELETE("competitions/{competitionId}/entries/{entryId}")
+    suspend fun deleteEntry(
+        @Path("competitionId") competitionId: Long,
+        @Path("entryId") entryId: Long
+    ): Response<Void>
+
+    @Multipart
+    @PUT("competitions/{competitionId}/entries/{entryId}")
+    suspend fun updateEntry(
+        @Path("competitionId") competitionId: Long,
+        @Path("entryId") entryId: Long,
+        @Part("entry") request: EntryRequestDto,
+        @Part file: okhttp3.MultipartBody.Part?
+    ): Response<Void>
 }

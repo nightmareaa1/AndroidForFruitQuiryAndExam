@@ -25,9 +25,11 @@ public class Fruit {
     @Size(max = 100, message = "Fruit name must not exceed 100 characters")
     private String name;
 
-    @Column(name = "en_name", nullable = false, length = 100)
-    @NotBlank(message = "Fruit English name cannot be blank")
-    private String enName;
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "image_path", length = 255)
+    private String imagePath;
 
     @OneToMany(mappedBy = "fruit", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<NutritionData> nutritionData;
@@ -78,13 +80,11 @@ public class Fruit {
         this.name = name;
     }
 
-    public String getEnName() {
-        return enName;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setEnName(String enName) {
-        this.enName = enName;
-    }
+    public String getImagePath() { return imagePath; }
+    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
 
     public List<NutritionData> getNutritionData() {
         return nutritionData;

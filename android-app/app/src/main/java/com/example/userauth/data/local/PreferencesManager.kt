@@ -75,6 +75,15 @@ open class PreferencesManager @Inject constructor(
     }
 
     /**
+     * Get userId from JWT token for real-time accuracy.
+     * @return userId or null if token is invalid
+     */
+    open fun getUserId(): Long? {
+        val token = getAuthToken()
+        return JwtTokenParser.extractUserId(token)
+    }
+
+    /**
      * Clear all stored data (logout)
      */
     open fun clearAll() {
