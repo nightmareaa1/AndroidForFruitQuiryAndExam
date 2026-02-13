@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -99,9 +100,11 @@ public class RatingService {
             RatingRequest.ScoreRequest scoreRequest = scoreMap.get(parameter.getId());
             
             // Validate score range (0 to parameter weight)
-            if (scoreRequest.getScore() < 0 || scoreRequest.getScore() > parameter.getWeight()) {
+            BigDecimal weight = new BigDecimal(parameter.getWeight());
+            if (scoreRequest.getScore().compareTo(BigDecimal.ZERO) < 0
+                    || scoreRequest.getScore().compareTo(weight) > 0) {
                 throw new IllegalArgumentException(
-                    String.format("参数 %s 的评分必须在 0 到 %d 之间", 
+                    String.format("参数 %s 的评分必须在 0 到 %d 之间",
                                 parameter.getName(), parameter.getWeight()));
             }
             

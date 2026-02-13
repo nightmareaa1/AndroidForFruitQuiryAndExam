@@ -10,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -115,8 +116,8 @@ class RatingDataServiceTest {
                 .thenReturn(Arrays.asList(parameter1, parameter2));
         
         // Mock rating data
-        CompetitionRating rating1 = new CompetitionRating(competition, entry, judge, parameter1, 25.0, "Good");
-        CompetitionRating rating2 = new CompetitionRating(competition, entry, judge, parameter2, 60.0, "Good");
+        CompetitionRating rating1 = new CompetitionRating(competition, entry, judge, parameter1, new BigDecimal("25.0"), "Good");
+        CompetitionRating rating2 = new CompetitionRating(competition, entry, judge, parameter2, new BigDecimal("60.0"), "Good");
         when(ratingRepository.findByCompetitionIdForExport(1L))
                 .thenReturn(Arrays.asList(rating1, rating2));
         

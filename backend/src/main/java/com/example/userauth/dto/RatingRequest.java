@@ -2,6 +2,7 @@ package com.example.userauth.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.util.List;
 
 public class RatingRequest {
@@ -66,33 +67,33 @@ public class RatingRequest {
     public static class ScoreRequest {
         @NotNull(message = "参数ID不能为空")
         private Long parameterId;
-        
+
         @NotNull(message = "评分不能为空")
-        private Double score;
-        
+        private BigDecimal score;
+
         // Default constructor
         public ScoreRequest() {}
-        
+
         // Constructor
-        public ScoreRequest(Long parameterId, Double score) {
+        public ScoreRequest(Long parameterId, BigDecimal score) {
             this.parameterId = parameterId;
             this.score = score;
         }
-        
+
         // Getters and setters
         public Long getParameterId() {
             return parameterId;
         }
-        
+
         public void setParameterId(Long parameterId) {
             this.parameterId = parameterId;
         }
-        
-        public Double getScore() {
+
+        public BigDecimal getScore() {
             return score;
         }
-        
-        public void setScore(Double score) {
+
+        public void setScore(BigDecimal score) {
             this.score = score;
         }
     }

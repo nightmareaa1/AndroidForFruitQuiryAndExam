@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -153,25 +154,25 @@ public class RatingDataService {
                 writer.append("\"").append(firstRating.getJudge().getUsername()).append("\",");
                 
                 // Create a map of parameter scores for this judge's rating
-                Map<Long, Double> parameterScores = ratingGroup.stream()
+                Map<Long, BigDecimal> parameterScores = ratingGroup.stream()
                         .collect(Collectors.toMap(r -> r.getParameter().getId(), CompetitionRating::getScore));
-                
-                double totalScore = 0.0;
+
+                BigDecimal totalScore = BigDecimal.ZERO;
                 
                 // Write scores for each parameter in order
                 for (EvaluationParameter parameter : parameters) {
-                    Double score = parameterScores.get(parameter.getId());
+                    BigDecimal score = parameterScores.get(parameter.getId());
                     if (score != null) {
-                        writer.append(String.valueOf(score));
-                        totalScore += score;
+                        writer.append(score.toString());
+                        totalScore = totalScore.add(score);
                     } else {
                         writer.append("0");
                     }
                     writer.append(",");
                 }
-                
+
                 // Write total score
-                writer.append(String.valueOf(totalScore)).append(",");
+                writer.append(totalScore.toString()).append(",");
                 
                 // Write note (escape quotes)
                 String note = firstRating.getNote();

@@ -1,5 +1,6 @@
 package com.example.userauth.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -110,49 +111,49 @@ public class RatingResponse {
         private Long parameterId;
         private String parameterName;
         private Integer parameterWeight;
-        private Double score;
-        
+        private BigDecimal score;
+
         // Default constructor
         public ScoreResponse() {}
-        
+
         // Constructor
-        public ScoreResponse(Long parameterId, String parameterName, Integer parameterWeight, Double score) {
+        public ScoreResponse(Long parameterId, String parameterName, Integer parameterWeight, BigDecimal score) {
             this.parameterId = parameterId;
             this.parameterName = parameterName;
             this.parameterWeight = parameterWeight;
             this.score = score;
         }
-        
+
         // Getters and setters
         public Long getParameterId() {
             return parameterId;
         }
-        
+
         public void setParameterId(Long parameterId) {
             this.parameterId = parameterId;
         }
-        
+
         public String getParameterName() {
             return parameterName;
         }
-        
+
         public void setParameterName(String parameterName) {
             this.parameterName = parameterName;
         }
-        
+
         public Integer getParameterWeight() {
             return parameterWeight;
         }
-        
+
         public void setParameterWeight(Integer parameterWeight) {
             this.parameterWeight = parameterWeight;
         }
-        
-        public Double getScore() {
+
+        public BigDecimal getScore() {
             return score;
         }
-        
-        public void setScore(Double score) {
+
+        public void setScore(BigDecimal score) {
             this.score = score;
         }
     }

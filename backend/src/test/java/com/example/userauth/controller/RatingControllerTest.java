@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -183,7 +184,7 @@ class RatingControllerTest {
         
         RatingRequest.ScoreRequest score = new RatingRequest.ScoreRequest();
         score.setParameterId(1L);
-        score.setScore(8.5);
+        score.setScore(new BigDecimal("8.5"));
         req.setScores(List.of(score));
         
         req.setNote("Test note");

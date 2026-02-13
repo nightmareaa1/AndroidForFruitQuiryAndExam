@@ -224,7 +224,7 @@ class RatingServiceTest {
     void submitRating_ScoreOutOfRange() {
         // Given
         RatingRequest request = createValidRatingRequest();
-        request.getScores().get(0).setScore(15.0);
+        request.getScores().get(0).setScore(new BigDecimal("15.0"));
 
         when(competitionRepository.findById(1L)).thenReturn(Optional.of(competition));
         when(entryRepository.findById(1L)).thenReturn(Optional.of(entry));
@@ -402,7 +402,7 @@ class RatingServiceTest {
 
         RatingRequest.ScoreRequest scoreRequest = new RatingRequest.ScoreRequest();
         scoreRequest.setParameterId(1L);
-        scoreRequest.setScore(8.5);
+        scoreRequest.setScore(new BigDecimal("8.5"));
         request.setScores(Arrays.asList(scoreRequest));
 
         return request;
