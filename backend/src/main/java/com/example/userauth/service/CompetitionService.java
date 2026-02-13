@@ -201,7 +201,43 @@ public class CompetitionService {
         competitionRepository.deleteById(id);
         logger.info("Successfully deleted competition with id: {}", id);
     }
-    
+
+    /**
+     * Soft delete competition (instead of hard delete)
+     */
+    public void softDeleteCompetition(Long id, Long userId) {
+        logger.info("Soft deleting competition with id: {} by user: {}", id, userId);
+
+        Competition competition = competitionRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("赛事不存在: " + id));
+
+        // Check if user is the creator
+        if (!competition.getCreator().getId().equals(userId)) {
+            throw new IllegalArgumentException("只有赛事创建者可以删除赛事");
+        }
+
+        // Soft delete
+        competition.setDeletedAt(LocalDateTime.now());
+        competitionRepository.save(competition);
+
+        logger.info("Successfully soft deleted competition with id: {}", id);
+    }
+
+    /**
+     * Get all active (non-deleted) competitions
+     */
+    @Transactional(readOnly = true)
+    public List<CompetitionResponse> getAllActiveCompetitions(Long userId, boolean isAdmin) {
+        logger.info("Fetching active competitions for user: {}", userId);
+
+        List<Competition> competitions = competitionRepository.findAllActive();
+
+        logger.info("Returning {} active competitions", competitions.size());
+        return competitions.stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
     /**
      * Add judges to competition
      */
