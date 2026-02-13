@@ -239,10 +239,15 @@ class FruitDataManagementViewModel @Inject constructor(
     }
 
     fun uploadFile(fileUri: Uri, dataType: String) {
+        val fruitName = _uiState.value.selectedFruit?.name ?: run {
+            _uiState.value = _uiState.value.copy(error = "请先选择水果", isLoading = false)
+            return
+        }
+        
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
             
-            fruitDataAdminRepository.uploadCsv(fileUri, dataType)
+            fruitDataAdminRepository.uploadCsv(fileUri, dataType, fruitName)
                 .onSuccess { imported ->
                     _uiState.value = _uiState.value.copy(
                         success = "导入成功，共 $imported 条数据",

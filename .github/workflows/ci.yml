@@ -91,12 +91,32 @@ jobs:
       working-directory: ./backend
       run: mvn jacoco:report
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v3
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
       with:
-        file: ./backend/target/site/jacoco/jacoco.xml
+        name: backend-test-results
+        path: |
+          backend/target/surefire-reports/
+          backend/target/site/jacoco/
+
+    - name: Publish Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
+      with:
+        name: Backend Tests
+        path: backend/target/surefire-reports/*.xml
+        reporter: java-junit
+        fail-on-error: false
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./backend/target/site/jacoco/jacoco.xml
         flags: backend
         name: backend-coverage
+        fail_ci_if_error: true
+        verbose: true
 
     - name: Build backend JAR
       working-directory: ./backend

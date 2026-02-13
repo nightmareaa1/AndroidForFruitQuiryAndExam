@@ -1,5 +1,7 @@
 package com.example.userauth.di
 
+import android.content.Context
+import android.content.pm.PackageManager
 import com.example.userauth.data.api.ApiService
 import com.example.userauth.data.api.AuthApiService
 import com.example.userauth.data.api.AuthInterceptor
@@ -9,6 +11,7 @@ import com.google.gson.GsonBuilder
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -22,15 +25,28 @@ import javax.inject.Singleton
 
 /**
  * Hilt module for network-related dependencies
- * Provides Retrofit configuration with JWT authentication and logging
+ * API URL配置说明：
+ * - 开发环境: 修改 app/build.gradle 中 manifestPlaceholders 的 IP 地址
+ * - 生产环境: 修改 app/build.gradle 中 release 的地址
  */
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    // Base URL for the backend API
-    private const val BASE_URL = "http://10.0.2.2:8080/api/"
-    
+    @Provides
+    @Singleton
+    fun provideApiBaseUrl(@ApplicationContext context: Context): String {
+        return try {
+            val appInfo = context.packageManager.getApplicationInfo(
+                context.packageName,
+                PackageManager.GET_META_DATA
+            )
+            appInfo.metaData.getString("API_BASE_URL") ?: "http://localhost:8080/api/"
+        } catch (e: Exception) {
+            "http://localhost:8080/api/"
+        }
+    }
+
     // Network timeouts
     private const val CONNECT_TIMEOUT = 30L
     private const val READ_TIMEOUT = 30L
@@ -100,9 +116,14 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, gson: Gson): Retrofit {
+    fun provideRetrofit(
+        okHttpClient: OkHttpClient,
+        gson: Gson,
+        @ApplicationContext context: Context
+    ): Retrofit {
+        val baseUrl = provideApiBaseUrl(context)
         return Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()

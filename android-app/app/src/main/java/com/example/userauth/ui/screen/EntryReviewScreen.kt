@@ -16,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import android.content.pm.PackageManager
 import com.example.userauth.data.api.dto.EntryDto
 import com.example.userauth.viewmodel.EntryReviewViewModel
 
@@ -204,7 +206,19 @@ private fun EntryReviewCard(
                 verticalAlignment = Alignment.Top
             ) {
                 Row(modifier = Modifier.weight(1f)) {
-                    val imageUrl = entry.filePath?.let { "http://10.0.2.2:8080/api/files/$it" }
+                    val context = LocalContext.current
+                    val apiBaseUrl = remember {
+                        try {
+                            val appInfo = context.packageManager.getApplicationInfo(
+                                context.packageName,
+                                PackageManager.GET_META_DATA
+                            )
+                            appInfo.metaData.getString("API_BASE_URL") ?: "http://localhost:8080/api/"
+                        } catch (e: Exception) {
+                            "http://localhost:8080/api/"
+                        }
+                    }
+                    val imageUrl = entry.filePath?.let { "$apiBaseUrl$it" }
                     if (!imageUrl.isNullOrBlank()) {
                         AsyncImage(
                             model = imageUrl,

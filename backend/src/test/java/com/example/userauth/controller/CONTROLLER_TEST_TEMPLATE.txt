@@ -1,0 +1,310 @@
+package com.example.userauth.controller;
+
+import com.example.userauth.config.TestConfig;
+import com.example.userauth.dto.*;
+import com.example.userauth.service.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+/**
+ * Controller Test Template
+ * 
+ * Testing Strategy:
+ * 1. Success scenarios - All endpoints return expected data with 200/201
+ * 2. Validation errors - Invalid input returns 400
+ * 3. Not found - Missing resources return 404
+ * 4. Authorization - Unauthorized access returns 401/403
+ * 5. Server errors - Unexpected errors return 500
+ * 
+ * Naming Convention: methodName_Scenario_ExpectedResult
+ * Example: getUserById_ExistingUser_ReturnsUser, createUser_InvalidInput_Returns400
+ */
+@WebMvcTest({ControllerName}.class)
+@ContextConfiguration(classes = {{ControllerName}.class, TestConfig.class})
+@DisplayName("{ControllerName} Tests")
+class {ControllerName}Test {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @MockBean
+    private {ServiceName} {serviceName};
+
+    // Test data
+    private {RequestDto} validRequest;
+    private {ResponseDto} responseDto;
+    private static final Long TEST_ID = 1L;
+    private static final String TEST_NAME = "test-name";
+
+    @BeforeEach
+    void setUp() {
+        // Initialize test data
+        validRequest = createValidRequest();
+        responseDto = createResponseDto();
+    }
+
+    // ==================== GET Endpoints ====================
+
+    @Test
+    @DisplayName("Should get all items successfully")
+    void getAllItems_Success() throws Exception {
+        // Given
+        List<{ResponseDto}> items = Arrays.asList(responseDto);
+        when({serviceName}.getAllItems()).thenReturn(items);
+
+        // When & Then
+        mockMvc.perform(get("/api/endpoint")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(TEST_ID))
+                .andExpect(jsonPath("$[0].name").value(TEST_NAME));
+
+        verify({serviceName}).getAllItems();
+    }
+
+    @Test
+    @DisplayName("Should get empty list when no items exist")
+    void getAllItems_EmptyList() throws Exception {
+        // Given
+        when({serviceName}.getAllItems()).thenReturn(Collections.emptyList());
+
+        // When & Then
+        mockMvc.perform(get("/api/endpoint")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$").isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should get item by ID successfully")
+    void getItemById_Success() throws Exception {
+        // Given
+        when({serviceName}.getItemById(TEST_ID)).thenReturn(responseDto);
+
+        // When & Then
+        mockMvc.perform(get("/api/endpoint/{id}", TEST_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(TEST_ID))
+                .andExpect(jsonPath("$.name").value(TEST_NAME));
+
+        verify({serviceName}).getItemById(TEST_ID);
+    }
+
+    @Test
+    @DisplayName("Should return 404 when item not found")
+    void getItemById_NotFound() throws Exception {
+        // Given
+        when({serviceName}.getItemById(TEST_ID))
+                .thenThrow(new RuntimeException("Item not found"));
+
+        // When & Then
+        mockMvc.perform(get("/api/endpoint/{id}", TEST_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify({serviceName}).getItemById(TEST_ID);
+    }
+
+    @Test
+    @DisplayName("Should return 400 for invalid ID format")
+    void getItemById_InvalidId() throws Exception {
+        // When & Then
+        mockMvc.perform(get("/api/endpoint/{id}", "invalid")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    // ==================== POST Endpoints ====================
+
+    @Test
+    @DisplayName("Should create item successfully")
+    void createItem_Success() throws Exception {
+        // Given
+        when({serviceName}.createItem(any({RequestDto}.class))).thenReturn(responseDto);
+
+        // When & Then
+        mockMvc.perform(post("/api/endpoint")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(TEST_ID))
+                .andExpect(jsonPath("$.name").value(TEST_NAME));
+
+        verify({serviceName}).createItem(any({RequestDto}.class));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when request body is invalid")
+    void createItem_InvalidRequestBody() throws Exception {
+        // Given
+        String invalidJson = "{\"invalid\": \"data\"}";
+
+        // When & Then
+        mockMvc.perform(post("/api/endpoint")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return 400 when required fields are missing")
+    void createItem_MissingRequiredFields() throws Exception {
+        // Given - JSON with missing required field
+        String incompleteJson = "{}";
+
+        // When & Then
+        mockMvc.perform(post("/api/endpoint")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(incompleteJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Should return 409 when item already exists")
+    void createItem_Duplicate() throws Exception {
+        // Given
+        when({serviceName}.createItem(any({RequestDto}.class)))
+                .thenThrow(new RuntimeException("Item already exists"));
+
+        // When & Then
+        mockMvc.perform(post("/api/endpoint")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isConflict());
+
+        verify({serviceName}).createItem(any({RequestDto}.class));
+    }
+
+    // ==================== PUT Endpoints ====================
+
+    @Test
+    @DisplayName("Should update item successfully")
+    void updateItem_Success() throws Exception {
+        // Given
+        when({serviceName}.updateItem(eq(TEST_ID), any({RequestDto}.class))).thenReturn(responseDto);
+
+        // When & Then
+        mockMvc.perform(put("/api/endpoint/{id}", TEST_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(TEST_ID))
+                .andExpect(jsonPath("$.name").value(TEST_NAME));
+
+        verify({serviceName}).updateItem(eq(TEST_ID), any({RequestDto}.class));
+    }
+
+    @Test
+    @DisplayName("Should return 404 when updating non-existent item")
+    void updateItem_NotFound() throws Exception {
+        // Given
+        when({serviceName}.updateItem(eq(TEST_ID), any({RequestDto}.class)))
+                .thenThrow(new RuntimeException("Item not found"));
+
+        // When & Then
+        mockMvc.perform(put("/api/endpoint/{id}", TEST_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(validRequest)))
+                .andExpect(status().isNotFound());
+
+        verify({serviceName}).updateItem(eq(TEST_ID), any({RequestDto}.class));
+    }
+
+    @Test
+    @DisplayName("Should return 400 when update request is invalid")
+    void updateItem_InvalidRequest() throws Exception {
+        // Given
+        String invalidJson = "{\"invalid\": \"data\"}";
+
+        // When & Then
+        mockMvc.perform(put("/api/endpoint/{id}", TEST_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    // ==================== DELETE Endpoints ====================
+
+    @Test
+    @DisplayName("Should delete item successfully")
+    void deleteItem_Success() throws Exception {
+        // Given
+        doNothing().when({serviceName}).deleteItem(TEST_ID);
+
+        // When & Then
+        mockMvc.perform(delete("/api/endpoint/{id}", TEST_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNoContent());
+
+        verify({serviceName}).deleteItem(TEST_ID);
+    }
+
+    @Test
+    @DisplayName("Should return 404 when deleting non-existent item")
+    void deleteItem_NotFound() throws Exception {
+        // Given
+        doThrow(new RuntimeException("Item not found")).when({serviceName}).deleteItem(TEST_ID);
+
+        // When & Then
+        mockMvc.perform(delete("/api/endpoint/{id}", TEST_ID)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+
+        verify({serviceName}).deleteItem(TEST_ID);
+    }
+
+    // ==================== Error Handling ====================
+
+    @Test
+    @DisplayName("Should return 500 on unexpected server error")
+    void handleUnexpectedError() throws Exception {
+        // Given
+        when({serviceName}.getAllItems()).thenThrow(new RuntimeException("Database error"));
+
+        // When & Then
+        mockMvc.perform(get("/api/endpoint")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+    }
+
+    // ==================== Helper Methods ====================
+
+    private {RequestDto} createValidRequest() {
+        {RequestDto} request = new {RequestDto}();
+        // Set required fields
+        request.setName(TEST_NAME);
+        return request;
+    }
+
+    private {ResponseDto} createResponseDto() {
+        {ResponseDto} dto = new {ResponseDto}();
+        dto.setId(TEST_ID);
+        dto.setName(TEST_NAME);
+        return dto;
+    }
+}

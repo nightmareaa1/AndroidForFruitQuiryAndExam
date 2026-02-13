@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import android.content.pm.PackageManager
 import com.example.userauth.data.api.dto.EntryDto
 import com.example.userauth.viewmodel.EntryEditViewModel
 
@@ -144,8 +145,21 @@ private fun EntryEditCard(
 ) {
     var showEditDialog by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
-
-    val imageUrl = entry.filePath?.let { "http://10.0.2.2:8080/api/files/$it" }
+    
+    val context = LocalContext.current
+    val apiBaseUrl = remember {
+        try {
+            val appInfo = context.packageManager.getApplicationInfo(
+                context.packageName,
+                PackageManager.GET_META_DATA
+            )
+            appInfo.metaData.getString("API_BASE_URL") ?: "http://localhost:8080/api/"
+        } catch (e: Exception) {
+            "http://localhost:8080/api/"
+        }
+    }
+    
+    val imageUrl = entry.filePath?.let { "$apiBaseUrl$it" }
 
     Card(
         modifier = Modifier.fillMaxWidth(),

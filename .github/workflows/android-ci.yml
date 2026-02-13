@@ -91,7 +91,7 @@ jobs:
       run: ./gradlew testWithCoverage
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: android-unit-test-results
@@ -99,12 +99,23 @@ jobs:
           android-app/app/build/reports/tests/
           android-app/app/build/reports/jacoco/
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+    - name: Publish Test Report
+      uses: dorny/test-reporter@v1
+      if: always()
       with:
-        file: ./android-app/app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
+        name: Android Unit Tests
+        path: android-app/app/build/test-results/testDebugUnitTest/*.xml
+        reporter: java-junit
+        fail-on-error: false
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        files: ./android-app/app/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml
         flags: android-unit
         name: android-unit-coverage
+        fail_ci_if_error: false
+        verbose: true
 
   # Android Instrumented Tests
   android-instrumented-test:

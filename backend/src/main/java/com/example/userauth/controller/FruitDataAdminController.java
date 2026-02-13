@@ -20,6 +20,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -322,12 +324,13 @@ public class FruitDataAdminController {
         return ResponseEntity.noContent().build();
     }
 
-    // 上传CSV文件并导入数据
+    // 上传CSV文件并导入数据（根据界面选择的fruitName和dataType，结合CSV中的field,value构建数据）
     @PostMapping("/import")
     public ResponseEntity<?> importCsv(
             @RequestParam String dataType,
+            @RequestParam String fruitName,
             @RequestParam("file") MultipartFile file) {
-        logger.info("Importing CSV file for data type: {}", dataType);
+        logger.info("Importing CSV file for dataType: {}, fruitName: {}", dataType, fruitName);
 
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body(createError("文件不能为空"));
@@ -337,29 +340,28 @@ public class FruitDataAdminController {
             return ResponseEntity.badRequest().body(createError("只能上传CSV文件"));
         }
 
+        // 验证水果是否存在
+        Optional<Fruit> fruitOpt = fruitRepository.findByName(fruitName);
+        if (fruitOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body(createError("水果不存在: " + fruitName));
+        }
+
         try {
+            // 解析CSV（支持2列field,value或3列fruit,field,value）
             List<Map<String, String>> csvData = parseCsv(file);
             int imported = 0;
 
             for (Map<String, String> row : csvData) {
-                String fruitName = row.get("fruit");
                 String fieldName = row.get("field");
                 String valueStr = row.get("value");
 
-                if (fruitName == null || fieldName == null || valueStr == null) {
-                    continue;
-                }
-
-                Optional<Fruit> fruitOpt = fruitRepository.findByName(fruitName);
-                if (fruitOpt.isEmpty()) {
-                    logger.warn("Fruit not found: {}", fruitName);
+                if (fieldName == null || valueStr == null || fieldName.isEmpty() || valueStr.isEmpty()) {
                     continue;
                 }
 
                 double value = Double.parseDouble(valueStr);
-                Fruit fruit = fruitOpt.get();
 
-                Optional<FruitData> dataOpt = fruitDataRepository.findByFruitNameAndDataType(fruit.getName(), dataType);
+                Optional<FruitData> dataOpt = fruitDataRepository.findByFruitNameAndDataType(fruitName, dataType);
                 FruitData fruitData;
 
                 if (dataOpt.isPresent()) {
@@ -372,7 +374,7 @@ public class FruitDataAdminController {
                     fruitData.setDataValues(existingValues);
                 } else {
                     fruitData = new FruitData();
-                    fruitData.setFruitName(fruit.getName());
+                    fruitData.setFruitName(fruitName);
                     fruitData.setDataType(dataType);
                     Map<String, Double> newValues = new HashMap<>();
                     newValues.put(fieldName, value);
@@ -473,31 +475,112 @@ public class FruitDataAdminController {
     private List<Map<String, String>> parseCsv(MultipartFile file) throws Exception {
         List<Map<String, String>> rows = new ArrayList<>();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
-            String headerLine = reader.readLine();
-            if (headerLine == null) {
-                throw new Exception("CSV文件为空");
-            }
+        // 优先使用GBK（中文Windows常用），如果失败再尝试UTF-8
+        Charset[] charsetsToTry = {Charset.forName("GBK"), StandardCharsets.UTF_8};
+        BufferedReader reader = null;
+        Exception lastException = null;
 
-            String[] headers = headerLine.split(",");
-            if (headers.length < 3) {
-                throw new Exception("CSV格式错误，需要至少3列：fruit,field,value");
-            }
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] values = line.split(",");
-                if (values.length >= 3) {
-                    Map<String, String> row = new HashMap<>();
-                    row.put("fruit", values[0].trim());
-                    row.put("field", values[1].trim());
-                    row.put("value", values[2].trim());
-                    rows.add(row);
+        for (Charset charset : charsetsToTry) {
+            try {
+                // 重置文件流
+                reader = new BufferedReader(new InputStreamReader(file.getInputStream(), charset));
+                String headerLine = reader.readLine();
+                
+                // 检查是否包含可识别的中文字符（不是乱码）
+                if (headerLine != null && headerLine.contains(",") && containsChinese(headerLine)) {
+                    logger.info("Successfully parsed CSV with encoding: {}", charset.name());
+                    // 重新创建reader，因为readLine已经读取了header
+                    reader = new BufferedReader(new InputStreamReader(file.getInputStream(), charset));
+                    break;
                 }
+            } catch (Exception e) {
+                lastException = e;
+                if (reader != null) {
+                    try { reader.close(); } catch (Exception ex) {}
+                }
+                reader = null;
             }
         }
 
+        if (reader == null) {
+            throw new Exception("无法解析CSV文件编码", lastException);
+        }
+
+        String headerLine = reader.readLine();
+        if (headerLine == null) {
+            throw new Exception("CSV文件为空");
+        }
+
+        // 检测是三列(fruit,field,value)还是两列(field,value)
+        String[] headers = headerLine.split(",");
+        boolean hasFruitColumn = headers.length >= 3;
+
+        if (hasFruitColumn) {
+            logger.info("Detected 3-column CSV format");
+        } else if (headers.length >= 2) {
+            logger.info("Detected 2-column CSV format");
+        } else {
+            throw new Exception("CSV格式错误，需要至少2列");
+        }
+
+        String line;
+        int lineNumber = 1;
+        while ((line = reader.readLine()) != null) {
+            lineNumber++;
+            String[] values = line.split(",");
+            
+            String fruit = null;
+            String field;
+            String value;
+
+            if (hasFruitColumn && values.length >= 3) {
+                fruit = values[0].trim();
+                field = values[1].trim();
+                value = values[2].trim();
+            } else if (values.length >= 2) {
+                field = values[0].trim();
+                value = values[1].trim();
+            } else {
+                logger.warn("Line {} has insufficient columns", lineNumber);
+                continue;
+            }
+
+            if (field.isEmpty() || value.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> row = new HashMap<>();
+            if (fruit != null) {
+                row.put("fruit", fruit);
+            }
+            row.put("field", field);
+            row.put("value", value);
+            rows.add(row);
+        }
+
+        logger.info("Parsed {} data rows", rows.size());
         return rows;
+    }
+
+    /**
+     * 检测字符串是否包含中文字符
+     */
+    private boolean containsChinese(String text) {
+        if (text == null || text.isEmpty()) {
+            return false;
+        }
+        // 检测Unicode范围内常见中文字符
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            // 常见中文字符范围
+            if ((c >= 0x4E00 && c <= 0x9FFF) ||  // CJK统一汉字
+                (c >= 0x3400 && c <= 0x4DBF) ||  // CJK统一汉字扩展A
+                (c >= 0x3000 && c <= 0x303F) ||  // CJK符号标点
+                (c >= 0xFF00 && c <= 0xFFEF)) {   // 全角ASCII、全角标点
+                return true;
+            }
+        }
+        return false;
     }
 
     private ErrorResponse createError(String message) {

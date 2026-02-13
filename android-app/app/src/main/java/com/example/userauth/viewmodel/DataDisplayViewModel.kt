@@ -1,5 +1,6 @@
 package com.example.userauth.viewmodel
 
+import android.content.pm.PackageManager
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -10,8 +11,10 @@ import com.example.userauth.data.model.SubmissionScore
 import com.example.userauth.data.model.ScoreParameter
 import com.example.userauth.data.repository.RatingRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import android.content.Context
 
 /**
  * ViewModel for data display screen
@@ -19,8 +22,21 @@ import javax.inject.Inject
  */
 @HiltViewModel
 class DataDisplayViewModel @Inject constructor(
-    private val ratingRepository: RatingRepository
+    private val ratingRepository: RatingRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
+    
+    private val apiBaseUrl: String by lazy {
+        try {
+            val appInfo = context.packageManager.getApplicationInfo(
+                context.packageName,
+                PackageManager.GET_META_DATA
+            )
+            appInfo.metaData.getString("API_BASE_URL") ?: "http://localhost:8080/api/"
+        } catch (e: Exception) {
+            "http://localhost:8080/api/"
+        }
+    }
     private val _submissions = MutableStateFlow<List<SubmissionScore>>(emptyList())
     val submissions: StateFlow<List<SubmissionScore>> = _submissions.asStateFlow()
 
@@ -57,7 +73,7 @@ class DataDisplayViewModel @Inject constructor(
                             id = entry.entryId.toString(),
                             contestant = entry.contestantName,
                             title = entry.entryName,
-                            imageUrl = entry.filePath?.let { "http://10.0.2.2:8080/api/files/$it" },
+                            imageUrl = entry.filePath?.let { "$apiBaseUrl$it" },
                             scores = entry.parameterScores.map { param ->
                                 ScoreParameter(
                                     name = param.parameterName,

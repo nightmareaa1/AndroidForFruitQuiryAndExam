@@ -42,6 +42,7 @@ interface FruitDataAdminApi {
     @POST("admin/fruit-data/import")
     suspend fun importCsv(
         @Part("dataType") dataType: RequestBody,
+        @Part("fruitName") fruitName: RequestBody,
         @Part file: MultipartBody.Part
     ): Response<Map<String, Any>>
 

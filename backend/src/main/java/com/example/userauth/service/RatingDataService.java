@@ -210,15 +210,29 @@ public class RatingDataService {
      * Rating data is visible to:
      * - Competition creator (admin)
      * - Competition judges
-     * - All authenticated users for viewing competition entries
+     * - Anyone if competition has ended
      */
     public boolean canViewRatingData(Long competitionId, Long userId) {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new IllegalArgumentException("赛事不存在"));
         
-        // All authenticated users can view competition data
-        // This allows regular users to browse competitions and view entry information
-        return true;
+        // Competition creator can always view
+        if (competition.getCreator().getId().equals(userId)) {
+            return true;
+        }
+        
+        // Competition judges can view
+        if (judgeRepository.existsByCompetitionIdAndJudgeId(competitionId, userId)) {
+            return true;
+        }
+        
+        // If competition has ended, anyone can view
+        if (competition.getStatus() == Competition.CompetitionStatus.ENDED) {
+            return true;
+        }
+        
+        // Otherwise, unauthorized
+        return false;
     }
     
     /**

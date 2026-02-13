@@ -20,51 +20,37 @@ class FruitDataAdminRepository @Inject constructor(
 ) {
     /**
      * 上传 CSV 文件并导入数据
-     * @param fileUri 文件 URI（支持 content:// 和 file:// 格式）
-     * @param dataType 数据类型
-     * @return 成功返回导入的记录数量，失败返回异常信息
+     * @param fileUri 文件 URI
+     * @param dataType 数据类型（从界面选择）
+     * @param fruitName 水果名称（从界面选择）
+     * @return 成功返回导入的记录数量
      */
-    suspend fun uploadCsv(fileUri: Uri, dataType: String): Result<Int> = withContext(Dispatchers.IO) {
+    suspend fun uploadCsv(fileUri: Uri, dataType: String, fruitName: String): Result<Int> = withContext(Dispatchers.IO) {
         try {
-            // 使用 ContentResolver 读取文件（正确处理 content:// URI）
             val inputStream = context.contentResolver.openInputStream(fileUri)
-                ?: return@withContext Result.failure(Exception("无法打开文件，请检查文件权限"))
+                ?: return@withContext Result.failure(Exception("无法打开文件"))
 
             val fileBytes = inputStream.use { it.readBytes() }
-
             if (fileBytes.isEmpty()) {
                 return@withContext Result.failure(Exception("文件内容为空"))
             }
 
-            // 获取文件名
-            val fileName = getFileName(fileUri) ?: "import_${System.currentTimeMillis()}.csv"
-
-            // 获取 MIME 类型
+            val fileName = getFileName(fileUri) ?: "import.csv"
             val mimeType = context.contentResolver.getType(fileUri) ?: "text/csv"
 
-            // 创建 MultipartBody.Part
             val requestFile = fileBytes.toRequestBody(mimeType.toMediaTypeOrNull())
             val filePart = MultipartBody.Part.createFormData("file", fileName, requestFile)
 
-            // 创建 dataType 参数
             val dataTypePart = dataType.toRequestBody("text/plain".toMediaTypeOrNull())
+            val fruitNamePart = fruitName.toRequestBody("text/plain".toMediaTypeOrNull())
 
-            // 执行上传
-            val response = api.importCsv(dataTypePart, filePart)
+            val response = api.importCsv(dataTypePart, fruitNamePart, filePart)
 
             if (response.isSuccessful) {
-                val importedValue = response.body()?.get("imported")
-                val imported = when (importedValue) {
-                    is Int -> importedValue
-                    is Double -> importedValue.toInt()
-                    is Long -> importedValue.toInt()
-                    is String -> importedValue.toIntOrNull() ?: 0
-                    else -> 0
-                }
+                val imported = response.body()?.get("imported")?.toString()?.toIntOrNull() ?: 0
                 Result.success(imported)
             } else {
-                val errorBody = response.body()?.toString() ?: response.message()
-                Result.failure(Exception("上传失败: ${response.code()} - $errorBody"))
+                Result.failure(Exception("上传失败: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(Exception("文件处理失败: ${e.message}"))

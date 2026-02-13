@@ -17,6 +17,12 @@
         android:theme="@style/Theme.UserAuth"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        
+        <!-- API Base URL placeholder (配置在 build.gradle 的 manifestPlaceholders 中) -->
+        <meta-data
+            android:name="API_BASE_URL"
+            android:value="${API_BASE_URL}" />
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"

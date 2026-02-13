@@ -182,6 +182,7 @@ public class SecurityConfig {
                 
                 // Admin-only endpoints
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
+                .requestMatchers("/api/admin/fruit-data/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/evaluation-models").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/evaluation-models/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/evaluation-models/**").hasRole("ADMIN")

@@ -21,12 +21,19 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        
+        // API URL via manifest placeholder
+        manifestPlaceholders = [API_BASE_URL: "http://192.168.1.102:8080/api/"]
     }
 
     buildTypes {
+        debug {
+            manifestPlaceholders = [API_BASE_URL: "http://192.168.1.102:8080/api/"]
+        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            manifestPlaceholders = [API_BASE_URL: "https://your-server.com/api/"]
         }
     }
     compileOptions {
@@ -40,6 +47,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.8'
