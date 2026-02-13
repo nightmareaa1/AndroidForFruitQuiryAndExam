@@ -1,6 +1,7 @@
 package com.example.userauth.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,8 +28,8 @@ public class CompetitionRating {
     @JoinColumn(name = "parameter_id", nullable = false)
     private EvaluationParameter parameter;
     
-    @Column(name = "score", nullable = false)
-    private Double score;
+    @Column(name = "score", nullable = false, precision = 5, scale = 2)
+    private BigDecimal score;
     
     @Column(name = "note", columnDefinition = "TEXT")
     private String note;
@@ -48,8 +49,8 @@ public class CompetitionRating {
     public CompetitionRating() {}
     
     // Constructor with required fields
-    public CompetitionRating(Competition competition, CompetitionEntry entry, User judge, 
-                           EvaluationParameter parameter, Double score, String note) {
+    public CompetitionRating(Competition competition, CompetitionEntry entry, User judge,
+                           EvaluationParameter parameter, BigDecimal score, String note) {
         this.competition = competition;
         this.entry = entry;
         this.judge = judge;
@@ -99,11 +100,11 @@ public class CompetitionRating {
         this.parameter = parameter;
     }
     
-    public Double getScore() {
+    public BigDecimal getScore() {
         return score;
     }
-    
-    public void setScore(Double score) {
+
+    public void setScore(BigDecimal score) {
         this.score = score;
     }
     

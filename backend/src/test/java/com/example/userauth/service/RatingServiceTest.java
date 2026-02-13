@@ -12,6 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,7 +95,7 @@ class RatingServiceTest {
         rating.setEntry(entry);
         rating.setJudge(judge);
         rating.setParameter(parameter);
-        rating.setScore(8.5);
+        rating.setScore(new BigDecimal("8.5"));
         rating.setSubmittedAt(LocalDateTime.now());
     }
 
@@ -244,7 +245,7 @@ class RatingServiceTest {
         RatingRequest request = createValidRatingRequest();
         CompetitionRating existingRating = new CompetitionRating();
         existingRating.setId(1L);
-        existingRating.setScore(5.0);
+        existingRating.setScore(new BigDecimal("5.0"));
         existingRating.setParameter(parameter);
         existingRating.setCompetition(competition);
         existingRating.setEntry(entry);
