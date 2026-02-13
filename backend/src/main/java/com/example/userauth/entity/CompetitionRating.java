@@ -35,7 +35,10 @@ public class CompetitionRating {
     
     @Column(name = "submitted_at")
     private LocalDateTime submittedAt;
-    
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
+
     @PrePersist
     protected void onCreate() {
         submittedAt = LocalDateTime.now();
@@ -115,8 +118,20 @@ public class CompetitionRating {
     public LocalDateTime getSubmittedAt() {
         return submittedAt;
     }
-    
+
     public void setSubmittedAt(LocalDateTime submittedAt) {
         this.submittedAt = submittedAt;
+    }
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 }
