@@ -42,32 +42,32 @@ public class CompetitionService {
     private FileStorageService fileStorageService;
     
     /**
-     * Get all competitions
+     * Get all active competitions (non-deleted)
      * All authenticated users can view all competitions for evaluation display
      * Admin sees all competitions with full details
      * Regular users can view all competitions to browse and evaluate
      */
     @Transactional(readOnly = true)
     public List<CompetitionResponse> getAllCompetitions(Long userId, boolean isAdmin) {
-        logger.info("Fetching competitions for user: {}, isAdmin: {}", userId, isAdmin);
-        
-        // All authenticated users can view all competitions
+        logger.info("Fetching active competitions for user: {}, isAdmin: {}", userId, isAdmin);
+
+        // All authenticated users can view all active (non-deleted) competitions
         // This enables regular users to browse competitions and view scores
-        List<Competition> competitions = competitionRepository.findAll();
-        
-        logger.info("Returning {} competitions for user: {}", competitions.size(), userId);
+        List<Competition> competitions = competitionRepository.findAllActive();
+
+        logger.info("Returning {} active competitions for user: {}", competitions.size(), userId);
         return competitions.stream()
                 .map(this::convertToResponse)
                 .toList();
     }
     
     /**
-     * Get competitions created by a specific user
+     * Get active competitions created by a specific user
      */
     @Transactional(readOnly = true)
     public List<CompetitionResponse> getCompetitionsByCreator(Long creatorId) {
-        logger.info("Fetching competitions created by user: {}", creatorId);
-        List<Competition> competitions = competitionRepository.findByCreatorIdOrderByCreatedAtDesc(creatorId);
+        logger.info("Fetching active competitions created by user: {}", creatorId);
+        List<Competition> competitions = competitionRepository.findActiveByCreatorIdOrderByCreatedAtDesc(creatorId);
         return competitions.stream()
                 .map(this::convertToResponse)
                 .toList();
@@ -86,12 +86,12 @@ public class CompetitionService {
     }
     
     /**
-     * Get competition by id
+     * Get active competition by id
      */
     @Transactional(readOnly = true)
     public Optional<CompetitionResponse> getCompetitionById(Long id) {
-        logger.info("Fetching competition with id: {}", id);
-        Optional<Competition> competition = competitionRepository.findByIdWithDetails(id);
+        logger.info("Fetching active competition with id: {}", id);
+        Optional<Competition> competition = competitionRepository.findActiveByIdWithDetails(id);
         return competition.map(this::convertToResponse);
     }
     

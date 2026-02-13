@@ -121,10 +121,10 @@ class CompetitionServiceTest {
     // ==================== Query Tests ====================
 
     @Test
-    @DisplayName("Should get all competitions successfully")
+    @DisplayName("Should get all active competitions successfully")
     void getAllCompetitions_Success() {
         // Given
-        when(competitionRepository.findAll()).thenReturn(Arrays.asList(competition, competition2));
+        when(competitionRepository.findAllActive()).thenReturn(Arrays.asList(competition, competition2));
 
         // When
         List<CompetitionResponse> responses = competitionService.getAllCompetitions(1L, false);
@@ -133,14 +133,14 @@ class CompetitionServiceTest {
         assertNotNull(responses);
         assertEquals(2, responses.size());
         assertEquals("测试赛事", responses.get(0).getName());
-        verify(competitionRepository).findAll();
+        verify(competitionRepository).findAllActive();
     }
 
     @Test
-    @DisplayName("Should get all competitions for admin")
+    @DisplayName("Should get all active competitions for admin")
     void getAllCompetitions_Admin() {
         // Given
-        when(competitionRepository.findAll()).thenReturn(Arrays.asList(competition));
+        when(competitionRepository.findAllActive()).thenReturn(Arrays.asList(competition));
 
         // When
         List<CompetitionResponse> responses = competitionService.getAllCompetitions(1L, true);
@@ -148,14 +148,14 @@ class CompetitionServiceTest {
         // Then
         assertNotNull(responses);
         assertEquals(1, responses.size());
-        verify(competitionRepository).findAll();
+        verify(competitionRepository).findAllActive();
     }
 
     @Test
-    @DisplayName("Should get competitions by creator")
+    @DisplayName("Should get active competitions by creator")
     void getCompetitionsByCreator_Success() {
         // Given
-        when(competitionRepository.findByCreatorIdOrderByCreatedAtDesc(1L))
+        when(competitionRepository.findActiveByCreatorIdOrderByCreatedAtDesc(1L))
                 .thenReturn(Arrays.asList(competition, competition2));
 
         // When
@@ -164,14 +164,14 @@ class CompetitionServiceTest {
         // Then
         assertNotNull(responses);
         assertEquals(2, responses.size());
-        verify(competitionRepository).findByCreatorIdOrderByCreatedAtDesc(1L);
+        verify(competitionRepository).findActiveByCreatorIdOrderByCreatedAtDesc(1L);
     }
 
     @Test
-    @DisplayName("Should return empty list when creator has no competitions")
+    @DisplayName("Should return empty list when creator has no active competitions")
     void getCompetitionsByCreator_Empty() {
         // Given
-        when(competitionRepository.findByCreatorIdOrderByCreatedAtDesc(99L))
+        when(competitionRepository.findActiveByCreatorIdOrderByCreatedAtDesc(99L))
                 .thenReturn(Collections.emptyList());
 
         // When
@@ -200,10 +200,10 @@ class CompetitionServiceTest {
     }
 
     @Test
-    @DisplayName("Should get competition by id successfully")
+    @DisplayName("Should get active competition by id successfully")
     void getCompetitionById_Success() {
         // Given
-        when(competitionRepository.findByIdWithDetails(1L)).thenReturn(Optional.of(competition));
+        when(competitionRepository.findActiveByIdWithDetails(1L)).thenReturn(Optional.of(competition));
 
         // When
         Optional<CompetitionResponse> response = competitionService.getCompetitionById(1L);
@@ -212,14 +212,14 @@ class CompetitionServiceTest {
         assertTrue(response.isPresent());
         assertEquals("测试赛事", response.get().getName());
         assertEquals(1L, response.get().getId());
-        verify(competitionRepository).findByIdWithDetails(1L);
+        verify(competitionRepository).findActiveByIdWithDetails(1L);
     }
 
     @Test
-    @DisplayName("Should return empty when competition not found")
+    @DisplayName("Should return empty when active competition not found")
     void getCompetitionById_NotFound() {
         // Given
-        when(competitionRepository.findByIdWithDetails(99L)).thenReturn(Optional.empty());
+        when(competitionRepository.findActiveByIdWithDetails(99L)).thenReturn(Optional.empty());
 
         // When
         Optional<CompetitionResponse> response = competitionService.getCompetitionById(99L);
@@ -392,42 +392,44 @@ class CompetitionServiceTest {
         verify(modelRepository).findById(2L);
     }
 
-    // ==================== Delete Competition Tests ====================
+    // ==================== Soft Delete Competition Tests ====================
 
     @Test
-    @DisplayName("Should delete competition successfully")
-    void deleteCompetition_Success() {
+    @DisplayName("Should soft delete competition successfully")
+    void softDeleteCompetition_Success() {
         // Given
         when(competitionRepository.findById(1L)).thenReturn(Optional.of(competition));
+        when(competitionRepository.save(any(Competition.class))).thenReturn(competition);
 
         // When
-        competitionService.deleteCompetition(1L, 1L);
+        competitionService.softDeleteCompetition(1L, 1L);
 
         // Then
-        verify(competitionRepository).deleteById(1L);
+        verify(competitionRepository).save(competition);
+        assertNotNull(competition.getDeletedAt());
     }
 
     @Test
-    @DisplayName("Should throw exception when deleting non-existent competition")
-    void deleteCompetition_NotFound() {
+    @DisplayName("Should throw exception when soft deleting non-existent competition")
+    void softDeleteCompetition_NotFound() {
         // Given
         when(competitionRepository.findById(99L)).thenReturn(Optional.empty());
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> competitionService.deleteCompetition(99L, 1L));
+                () -> competitionService.softDeleteCompetition(99L, 1L));
         assertTrue(exception.getMessage().contains("赛事不存在"));
     }
 
     @Test
-    @DisplayName("Should throw exception when non-creator tries to delete")
-    void deleteCompetition_NotCreator() {
+    @DisplayName("Should throw exception when non-creator tries to soft delete")
+    void softDeleteCompetition_NotCreator() {
         // Given
         when(competitionRepository.findById(1L)).thenReturn(Optional.of(competition));
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> competitionService.deleteCompetition(1L, 99L));
+                () -> competitionService.softDeleteCompetition(1L, 99L));
         assertEquals("只有赛事创建者可以删除赛事", exception.getMessage());
     }
 

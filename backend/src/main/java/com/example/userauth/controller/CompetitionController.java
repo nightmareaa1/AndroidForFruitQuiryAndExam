@@ -181,24 +181,24 @@ public class CompetitionController {
     }
     
     /**
-     * Delete competition
+     * Delete competition (soft delete)
      * Only competition creator can delete
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCompetition(@PathVariable Long id) {
-        logger.info("DELETE /api/competitions/{} - Deleting competition", id);
-        
+        logger.info("DELETE /api/competitions/{} - Soft deleting competition", id);
+
         try {
             User currentUser = getCurrentUser();
-            competitionService.deleteCompetition(id, currentUser.getId());
-            
-            logger.info("Successfully deleted competition with id: {}", id);
+            competitionService.softDeleteCompetition(id, currentUser.getId());
+
+            logger.info("Successfully soft deleted competition with id: {}", id);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             logger.warn("Competition not found for deletion or access denied: {}", e.getMessage());
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            logger.error("Error deleting competition with id: {}", id, e);
+            logger.error("Error soft deleting competition with id: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
