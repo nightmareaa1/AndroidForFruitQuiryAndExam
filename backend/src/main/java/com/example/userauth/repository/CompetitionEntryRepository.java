@@ -2,6 +2,7 @@ package com.example.userauth.repository;
 
 import com.example.userauth.entity.CompetitionEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -38,4 +39,17 @@ public interface CompetitionEntryRepository extends JpaRepository<CompetitionEnt
      * Count entries by competition and status
      */
     long countByCompetitionIdAndStatus(Long competitionId, CompetitionEntry.EntryStatus status);
+
+    /**
+     * Find all non-deleted entries for a competition
+     */
+    @Query("SELECT e FROM CompetitionEntry e WHERE e.competition.id = :competitionId AND e.deletedAt IS NULL ORDER BY e.displayOrder")
+    List<CompetitionEntry> findActiveByCompetitionIdOrderByDisplayOrder(@Param("competitionId") Long competitionId);
+
+    /**
+     * Soft delete entry by setting deleted_at
+     */
+    @Modifying
+    @Query("UPDATE CompetitionEntry e SET e.deletedAt = CURRENT_TIMESTAMP WHERE e.id = :id")
+    void softDeleteById(@Param("id") Long id);
 }

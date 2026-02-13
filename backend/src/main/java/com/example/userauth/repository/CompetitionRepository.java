@@ -2,6 +2,7 @@ package com.example.userauth.repository;
 
 import com.example.userauth.entity.Competition;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -52,4 +53,36 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
      * Find all active competitions
      */
     List<Competition> findByStatusOrderByCreatedAtDesc(Competition.CompetitionStatus status);
+
+    /**
+     * Find all non-deleted competitions
+     */
+    @Query("SELECT c FROM Competition c WHERE c.deletedAt IS NULL ORDER BY c.createdAt DESC")
+    List<Competition> findAllActive();
+
+    /**
+     * Find all non-deleted competitions by creator
+     */
+    @Query("SELECT c FROM Competition c WHERE c.creator.id = :creatorId AND c.deletedAt IS NULL ORDER BY c.createdAt DESC")
+    List<Competition> findActiveByCreatorIdOrderByCreatedAtDesc(@Param("creatorId") Long creatorId);
+
+    /**
+     * Find non-deleted competition by id with details
+     */
+    @Query("SELECT c FROM Competition c " +
+           "LEFT JOIN FETCH c.model m " +
+           "LEFT JOIN FETCH m.parameters " +
+           "LEFT JOIN FETCH c.creator " +
+           "LEFT JOIN FETCH c.judges j " +
+           "LEFT JOIN FETCH j.judge " +
+           "LEFT JOIN FETCH c.entries e " +
+           "WHERE c.id = :id AND c.deletedAt IS NULL")
+    Optional<Competition> findActiveByIdWithDetails(@Param("id") Long id);
+
+    /**
+     * Soft delete competition by setting deleted_at
+     */
+    @Modifying
+    @Query("UPDATE Competition c SET c.deletedAt = CURRENT_TIMESTAMP WHERE c.id = :id")
+    void softDeleteById(@Param("id") Long id);
 }
