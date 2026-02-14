@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
     
     steps:
     - name: Checkout code
@@ -22,12 +23,12 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
 
@@ -58,14 +59,13 @@ jobs:
       run: mvn clean package -DskipTests
 
     - name: Upload backend JAR to release
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./backend/target/userauth-backend.jar
-        asset_name: userauth-backend-${{ github.ref_name }}.jar
-        asset_content_type: application/java-archive
+        tag_name: ${{ github.ref_name }}
+        files: ./backend/target/userauth-backend.jar
+        name: userauth-backend-${{ github.ref_name }}.jar
 
     - name: Log in to Container Registry
       uses: docker/login-action@v3
@@ -127,11 +127,10 @@ jobs:
         echo "APK signing would be configured here"
 
     - name: Upload APK to release
-      uses: actions/upload-release-asset@v1
+      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.create-release.outputs.upload_url }}
-        asset_path: ./android-app/app/build/outputs/apk/release/app-release.apk
-        asset_name: userauth-android-${{ github.ref_name }}.apk
-        asset_content_type: application/vnd.android.package-archive
+        tag_name: ${{ github.ref_name }}
+        files: ./android-app/app/build/outputs/apk/release/app-release.apk
+        name: userauth-android-${{ github.ref_name }}.apk

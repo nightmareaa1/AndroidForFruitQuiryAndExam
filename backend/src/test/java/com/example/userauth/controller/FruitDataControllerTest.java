@@ -7,6 +7,7 @@ import com.example.userauth.repository.FruitDataFieldRepository;
 import com.example.userauth.repository.FruitDataRepository;
 import com.example.userauth.repository.FruitRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
@@ -20,6 +21,7 @@ import java.util.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.*;
 
 @WebMvcTest(FruitDataController.class)
 @ContextConfiguration(classes = {FruitDataController.class, TestConfig.class})
@@ -96,5 +98,55 @@ public class FruitDataControllerTest {
         when(fruitRepository.findAll()).thenReturn(List.of(fruit));
         when(fruitDataRepository.findByFruitNameAndDataType("Apple","nutrition")).thenReturn(Optional.of(data));
         mockMvc.perform(get("/api/fruit-data/all/nutrition")).andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("Should return 404 when fruit not found in query")
+    void query_FruitNotFound_ReturnsNotFound() throws Exception {
+        when(fruitRepository.findByName("NonexistentFruit")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/fruit-data/query")
+                .param("fruit", "NonexistentFruit")
+                .param("dataType", "nutrition"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should return empty data map when fruit has no data")
+    void query_FruitNoData_ReturnsEmptyData() throws Exception {
+        Fruit fruit = new Fruit();
+        fruit.setId(1L);
+        fruit.setName("Banana");
+        
+        when(fruitRepository.findByName("Banana")).thenReturn(Optional.of(fruit));
+        when(fruitDataRepository.findByFruitNameAndDataType("Banana", "flavor")).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/fruit-data/query")
+                .param("fruit", "Banana")
+                .param("dataType", "flavor"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.fruitName").value("Banana"))
+                .andExpect(jsonPath("$.dataType").value("flavor"))
+                .andExpect(jsonPath("$.data").isEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return empty list when no fruits exist")
+    void getFruits_EmptyList() throws Exception {
+        when(fruitRepository.findAll()).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/fruit-data/fruits"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @DisplayName("Should return empty list when no fields for data type")
+    void getFields_EmptyList() throws Exception {
+        when(fieldRepository.findByFieldTypeAndIsActiveTrueOrderByDisplayOrder("nutrition")).thenReturn(Collections.emptyList());
+
+        mockMvc.perform(get("/api/fruit-data/fields/nutrition"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 }

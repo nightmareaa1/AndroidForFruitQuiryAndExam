@@ -123,7 +123,7 @@ jobs:
       run: mvn clean package -DskipTests
 
     - name: Upload backend artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: backend-jar
         path: backend/target/*.jar
@@ -177,7 +177,7 @@ jobs:
       run: ./gradlew jacocoTestReport
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: android-test-results
@@ -201,7 +201,7 @@ jobs:
       run: ./gradlew assembleRelease
 
     - name: Upload Android artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: android-apk
         path: |
@@ -283,7 +283,7 @@ jobs:
           ./gradlew connectedAndroidTest --stacktrace
 
     - name: Upload UI test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: android-ui-test-results
@@ -309,13 +309,13 @@ jobs:
         output: 'trivy-results.sarif'
 
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v2
+      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
         sarif_file: 'trivy-results.sarif'
 
     - name: Run CodeQL Analysis
-      uses: github/codeql-action/analyze@v2
+      uses: github/codeql-action/analyze@v3
       with:
         languages: java
 
