@@ -10,6 +10,12 @@ on:
     paths:
       - 'android-app/**'
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  security-events: write
+
 jobs:
   # Android Lint and Static Analysis
   android-lint:
