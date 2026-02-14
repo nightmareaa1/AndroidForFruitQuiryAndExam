@@ -33,6 +33,8 @@ android-app/.gradle/
 android-app/build/
 android-app/app/build/
 android-app/local.properties
+!android-app/gradle/wrapper/gradle-wrapper.jar
+!android-app/gradle/wrapper/
 
 # Android Studio
 android-app/.idea/
@@ -119,6 +121,7 @@ android-app/app/build/jacoco/
 *.ear
 !backend/.mvn/wrapper/maven-wrapper.jar
 !backend/gradle/wrapper/gradle-wrapper.jar
+!android-app/gradle/wrapper/gradle-wrapper.jar
 
 # Docker
 docker-compose.override.yml
