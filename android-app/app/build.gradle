@@ -139,7 +139,7 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     // Mockito 5.x with built-in inline mocking (no separate mockito-inline needed)
     testImplementation 'org.mockito:mockito-core:5.8.0'
-    testImplementation 'org.mockito.kotlin:mockito-kotlin:5.2.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:6.2.3'
     // Byte Buddy for Java 21 support
     testImplementation 'net.bytebuddy:byte-buddy:1.14.11'
     testImplementation 'net.bytebuddy:byte-buddy-agent:1.14.11'
