@@ -2,6 +2,9 @@ package com.example.userauth.data.local
 
 import android.content.Context
 import android.content.SharedPreferences
+import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -96,16 +99,29 @@ class PreferencesManagerTest {
 
     @Test
     fun `isAdmin should return stored admin status`() {
-        whenever(sharedPreferences.getBoolean("is_admin", false)).thenReturn(true)
-
-        val isAdmin = preferencesManager.isAdmin()
-
-        assertTrue(isAdmin)
+        // Given - mock the token retrieval and JwtTokenParser
+        val token = "valid_token"
+        whenever(sharedPreferences.getString("auth_token", null)).thenReturn(token)
+        
+        // Mock JwtTokenParser singleton
+        mockkObject(JwtTokenParser)
+        every { JwtTokenParser.extractIsAdmin(token) } returns true
+        
+        try {
+            // When
+            val isAdmin = preferencesManager.isAdmin()
+            
+            // Then
+            assertTrue(isAdmin)
+        } finally {
+            unmockkObject(JwtTokenParser)
+        }
     }
 
     @Test
     fun `isAdmin should return false by default`() {
-        whenever(sharedPreferences.getBoolean("is_admin", false)).thenReturn(false)
+        // When token is null, isAdmin should return false
+        whenever(sharedPreferences.getString("auth_token", null)).thenReturn(null)
 
         val isAdmin = preferencesManager.isAdmin()
 

@@ -4,6 +4,7 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-parcelize'
+    id 'jacoco'
 }
 
 android {
@@ -208,5 +209,84 @@ tasks.register('testQuiet') {
     dependsOn 'testDebugUnitTest'
     doLast {
         println "✅ Test execution completed with minimal output"
+    }
+}
+
+// Jacoco configuration for code coverage
+jacoco {
+    toolVersion = "0.8.11"
+}
+
+// Task to generate JaCoCo coverage report for unit tests
+android.applicationVariants.all { variant ->
+    if (variant.buildType.name == "debug") {
+        def variantName = variant.name.capitalize()
+        
+        task "jacocoTestReport${variantName}"(type: JacocoReport, dependsOn: ["test${variantName}UnitTest"]) {
+            group = "verification"
+            description = "Generate JaCoCo coverage report for ${variantName} unit tests"
+            
+            reports {
+                xml.required = true
+                html.required = true
+                csv.required = false
+            }
+            
+            def fileFilter = [
+                // Android generated files
+                '**/R.class',
+                '**/R$*.class',
+                '**/BuildConfig.*',
+                '**/Manifest*.*',
+                // Test files
+                '**/*Test*.*',
+                'android/**/*.*',
+                // Dependency Injection
+                '**/di/**/*.*',
+                '**/*_Provide*',
+                '**/*_Factory*',
+                '**/*_MembersInjector*.*',
+                '**/Hilt_*.class',
+                '**/*_HiltComponents_*.class',
+                // UI Layer - Compose components and screens (not unit testable)
+                '**/ui/screen/**/*.*',
+                '**/ui/components/**/*.*',
+                '**/ui/theme/**/*.*',
+                '**/ui/navigation/**/*.*',
+                // Compose generated files
+                '**/ComposableSingletons*.class',
+                '**/*$*Preview*.*',
+                // Activities and Application (minimal logic)
+                '**/MainActivity.*',
+                '**/*Application.*',
+                // Dagger/Hilt generated
+                '**/*_ComponentTreeDeps*.*'
+            ]
+            
+            def debugTree = fileTree(dir: "${buildDir}/intermediates/javac/debug/classes", excludes: fileFilter)
+            def kotlinDebugTree = fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
+
+            sourceDirectories.setFrom(files("src/main/java", "src/main/kotlin"))
+            classDirectories.setFrom(files(kotlinDebugTree))
+            executionData.setFrom(fileTree(dir: buildDir, includes: [
+                'jacoco/testDebugUnitTest.exec',
+                'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'
+            ]))
+        }
+        
+        // Alias for easier CI/CD usage
+        task jacocoTestReport {
+            dependsOn "jacocoTestReport${variantName}"
+            group = "verification"
+            description = "Alias for jacocoTestReportDebug"
+        }
+        
+        // Combined task for running tests with coverage
+        task testWithCoverage {
+            dependsOn "test${variantName}UnitTest"
+            dependsOn "jacocoTestReport${variantName}"
+            group = "verification"
+            description = "Run unit tests and generate coverage report"
+        }
     }
 }

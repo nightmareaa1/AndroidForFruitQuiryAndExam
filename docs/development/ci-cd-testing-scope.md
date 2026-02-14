@@ -4,6 +4,8 @@
 
 本文档分析当前项目的CI/CD测试范围，并确认后端测试已完整集成到CI/CD管道中。
 
+**最后更新：** 2026-02-14
+
 ## 当前CI/CD工作流
 
 ### 1. 主CI/CD管道 (`ci.yml`)
@@ -21,14 +23,15 @@
 
 #### Android测试作业 (`android-test`)
 - Android Lint检查
-- Android单元测试
-- 生成JaCoCo覆盖率报告
+- Android单元测试 (`./gradlew testDebugUnitTest`)
+- 生成JaCoCo覆盖率报告 (`./gradlew jacocoTestReport`)
 - 上传覆盖率到Codecov
+- **注意：** UI测试已从CI/CD中移除（仅本地运行）
 
-#### Android UI测试作业 (`android-ui-test`)
-- 使用Android模拟器运行UI测试
-- API级别30, Google APIs
-- 上传测试结果
+#### ~~Android UI测试作业~~ (已移除)
+~~- 使用Android模拟器运行UI测试~~
+~~- API级别30, Google APIs~~
+~~- 上传测试结果~~
 
 #### 安全扫描 (`security-scan`)
 - Trivy漏洞扫描
@@ -180,13 +183,22 @@ GitHub Actions工作流会自动运行所有测试:
 
 ---
 
+## 变更历史
+
+### 2026-02-14
+- ✅ 从CI/CD中移除Android UI测试
+- ✅ 删除 `android-ci.yml` 文件
+- ✅ 修复GitHub Actions权限配置
+- ✅ 添加JaCoCo插件和任务到Android build.gradle
+
+---
+
 ## 结论
 
-✅ **后端测试已完整集成到CI/CD中**
+✅ **CI/CD配置已优化完成**
 
-- 所有后端单元测试和集成测试都已在CI/CD管道中运行
-- 覆盖率报告自动生成并上传到Codecov
-- 测试结果自动发布到GitHub
-- 代码质量检查集成SonarCloud
-
-**无需额外添加后端测试到CI/CD**，当前配置已完全覆盖。
+- 后端测试完整集成 (单元测试 + 集成测试)
+- Android单元测试集成 (Lint + 单元测试 + 覆盖率)
+- UI测试保留在本地运行（已从CI/CD移除）
+- 所有测试任务运行稳定
+- 权限问题已修复
