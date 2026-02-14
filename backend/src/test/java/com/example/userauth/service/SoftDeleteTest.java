@@ -1,5 +1,6 @@
 package com.example.userauth.service;
 
+import com.example.userauth.config.TestEnvironmentConfiguration;
 import com.example.userauth.entity.Competition;
 import com.example.userauth.entity.EvaluationModel;
 import com.example.userauth.entity.User;
@@ -9,6 +10,7 @@ import com.example.userauth.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
+@Import(TestEnvironmentConfiguration.class)
 @Transactional
 public class SoftDeleteTest {
 
