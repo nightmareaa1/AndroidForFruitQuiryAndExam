@@ -3,25 +3,25 @@ package com.example.userauth.config;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
-import org.springframework.core.env.Environment;
+import org.springframework.context.annotation.Profile;
 
-/**
- * Test configuration that provides a no-op EnvironmentValidator for testing.
- */
 @TestConfiguration
+@Profile("test")
 public class TestEnvironmentConfiguration {
 
-    /**
-     * Provides a no-op EnvironmentValidator for testing that skips all validation.
-     */
     @Bean
     @Primary
-    public EnvironmentValidator testEnvironmentValidator(Environment environment) {
-        return new EnvironmentValidator(environment) {
-            @Override
-            public void validateEnvironment() {
-                // No-op for testing - skip all validation
-            }
-        };
+    public EnvironmentValidator environmentValidator() {
+        return new NoOpEnvironmentValidator();
+    }
+
+    public static class NoOpEnvironmentValidator extends EnvironmentValidator {
+        public NoOpEnvironmentValidator() {
+            super(null);
+        }
+
+        @Override
+        public void validateEnvironment() {
+        }
     }
 }
