@@ -1,0 +1,141 @@
+# 2GB服务器优化版 - 使用预编译JAR包部署
+# 使用方法:
+#   1. 确保 backend/target/userauth-backend-1.0.0.jar 存在
+#   2. 直接启动: docker-compose -f docker-compose.jar.yml up -d
+#
+# 或者从GitHub下载JAR包:
+#   ./scripts/download-and-deploy.sh
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.jar
+    image: userauth-backend:jar
+    container_name: userauth-backend
+    restart: unless-stopped
+    # 内存限制
+    deploy:
+      resources:
+        limits:
+          memory: 800M
+        reservations:
+          memory: 400M
+    environment:
+      # 使用轻量级配置（关键！）
+      SPRING_PROFILES_ACTIVE: light
+      # 数据库连接
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/userauth_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: userauth
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-SecureDbPass456$%^}
+      # Redis连接
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      # JWT配置（生产环境必须修改！）
+      JWT_SECRET: ${JWT_SECRET:-MySecureProductionKey2024WithAtLeast32Chars!}
+      JWT_EXPIRATION: 86400000
+      JWT_REFRESH_EXPIRATION: 604800000
+      # CORS配置（添加你的Android应用地址）
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8080,http://10.0.2.2:8080}
+      # 日志
+      LOGGING_LEVEL_ROOT: INFO
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  mysql:
+    image: mysql:8.0
+    container_name: userauth-mysql
+    restart: unless-stopped
+    # 内存限制（2GB服务器关键配置）
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-RootPass123!@#}
+      MYSQL_DATABASE: userauth_dev
+      MYSQL_USER: userauth
+      MYSQL_PASSWORD: ${DB_PASSWORD:-SecureDbPass456$%^}
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --skip-name-resolve
+      --innodb-buffer-pool-size=128M
+      --innodb-log-buffer-size=8M
+      --innodb-log-file-size=32M
+      --key-buffer-size=16M
+      --tmp-table-size=16M
+      --max-heap-table-size=16M
+      --max-connections=50
+      --thread-cache-size=8
+      --table-open-cache=256
+      --open-files-limit=1024
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7-alpine
+    container_name: userauth-redis
+    restart: unless-stopped
+    # 内存限制
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+    command: >
+      redis-server
+      --maxmemory 64mb
+      --maxmemory-policy allkeys-lru
+      --appendonly no
+      --save ""
+      --tcp-keepalive 300
+      --timeout 0
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

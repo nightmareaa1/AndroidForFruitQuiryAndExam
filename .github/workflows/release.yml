@@ -64,8 +64,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ github.ref_name }}
-        files: ./backend/target/userauth-backend.jar
-        name: userauth-backend-${{ github.ref_name }}.jar
+        files: ./backend/target/userauth-backend-1.0.0.jar
 
     - name: Log in to Container Registry
       uses: docker/login-action@v3

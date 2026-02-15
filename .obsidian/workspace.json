@@ -185,7 +185,9 @@
   },
   "active": "a55ae532429fc394",
   "lastOpenFiles": [
-    "docs/deployment/backend-deployment-guide.md",
+    "docs/deployment/create-github-release.md",
+    "docs/deployment/download-jar-from-github.md",
+    "scripts/download-jar.sh",
     "backend/target/userauth-backend-1.0.0.jar.original",
     "backend/target/userauth-backend-1.0.0.jar",
     "backend/target/maven-archiver/pom.properties",
@@ -195,7 +197,8 @@
     "backend/target/test-classes/com/example/userauth/service/FileStorageServiceTest.class",
     "backend/target/test-classes/com/example/userauth/security/PasswordPolicyValidatorTest.class",
     "backend/target/test-classes/com/example/userauth/dto/AuthResponseTest.class",
-    "backend/target/test-classes/com/example/userauth/entity/EvaluationParameterTest.class",
+    "docs/deployment/jar-deployment-guide.md",
+    "docs/deployment/backend-deployment-guide.md",
     "docs/deployment/2gb-server-optimization.md",
     "backend/target/site/jacoco/jacoco-resources/branchpc.gif",
     "backend/target/site/jacoco/jacoco-resources/branchnc.gif",
@@ -228,9 +231,6 @@
     "Untitled.canvas",
     "docs/development/problem-solving-guide.md",
     "backend/src/test/README.md",
-    "PROJECT_SUMMARY.md",
-    "PROPERTY_TESTING_SOLUTION.md",
-    "PROJECT_STRUCTURE.md",
-    "DOCKER_SETUP_SUCCESS.md"
+    "PROJECT_SUMMARY.md"
   ]
 }

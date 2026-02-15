@@ -10,7 +10,6 @@ CREATE INDEX idx_competitions_deadline ON competitions(deadline);
 
 -- competition_entries 表索引
 CREATE INDEX idx_entries_competition_id ON competition_entries(competition_id);
-CREATE INDEX idx_entries_contestant_id ON competition_entries(contestant_id);
 CREATE INDEX idx_entries_status ON competition_entries(status);
 CREATE INDEX idx_entries_competition_order ON competition_entries(competition_id, display_order);
 
