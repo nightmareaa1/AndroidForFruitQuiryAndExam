@@ -127,7 +127,7 @@ jobs:
         cat app/build/reports/jacoco/jacocoTestReportDebug/html/index.html | grep -oE "Total.*[0-9]+%" || echo "Report generated"
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       with:
         files: ./android-app/app/build/reports/jacoco/jacocoTestReportDebug/jacocoTestReportDebug.xml
         flags: android-unit
