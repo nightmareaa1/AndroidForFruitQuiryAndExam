@@ -73,7 +73,7 @@ class DataDisplayViewModel @Inject constructor(
                             id = entry.entryId.toString(),
                             contestant = entry.contestantName,
                             title = entry.entryName,
-                            imageUrl = entry.filePath?.let { "$apiBaseUrl$it" },
+                            imageUrl = entry.filePath?.let { "${apiBaseUrl}files/$it" },
                             scores = entry.parameterScores.map { param ->
                                 ScoreParameter(
                                     name = param.parameterName,

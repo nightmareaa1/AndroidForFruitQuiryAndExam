@@ -159,7 +159,7 @@ private fun EntryEditCard(
         }
     }
     
-    val imageUrl = entry.filePath?.let { "$apiBaseUrl$it" }
+    val imageUrl = entry.filePath?.let { "${apiBaseUrl}files/$it" }
 
     Card(
         modifier = Modifier.fillMaxWidth(),

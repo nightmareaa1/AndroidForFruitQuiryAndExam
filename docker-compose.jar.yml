@@ -39,6 +39,9 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:8080,http://10.0.2.2:8080}
       # 日志
       LOGGING_LEVEL_ROOT: INFO
+    volumes:
+      # 上传文件目录挂载（关键！）
+      - ./uploads:/app/uploads
     ports:
       - "8080:8080"
     depends_on:

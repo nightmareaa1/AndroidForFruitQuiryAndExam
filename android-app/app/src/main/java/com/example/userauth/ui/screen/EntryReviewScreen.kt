@@ -218,7 +218,7 @@ private fun EntryReviewCard(
                             "http://localhost:8080/api/"
                         }
                     }
-                    val imageUrl = entry.filePath?.let { "$apiBaseUrl$it" }
+                    val imageUrl = entry.filePath?.let { "${apiBaseUrl}files/$it" }
                     if (!imageUrl.isNullOrBlank()) {
                         AsyncImage(
                             model = imageUrl,

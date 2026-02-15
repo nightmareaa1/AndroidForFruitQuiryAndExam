@@ -24,17 +24,17 @@ android {
         }
         
         // API URL via manifest placeholder
-        manifestPlaceholders = [API_BASE_URL: "http://192.168.1.102:8080/api/"]
+        manifestPlaceholders = [API_BASE_URL: "http://39.108.161.182:8080/api/"]
     }
 
     buildTypes {
         debug {
-            manifestPlaceholders = [API_BASE_URL: "http://192.168.1.102:8080/api/"]
+            manifestPlaceholders = [API_BASE_URL: "http://39.108.161.182:8080/api/"]
         }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            manifestPlaceholders = [API_BASE_URL: "https://your-server.com/api/"]
+            manifestPlaceholders = [API_BASE_URL: "http://39.108.161.182.com/api/"]
         }
     }
     compileOptions {
