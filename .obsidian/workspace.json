@@ -185,6 +185,9 @@
   },
   "active": "a55ae532429fc394",
   "lastOpenFiles": [
+    "fix-docker-pull.sh",
+    "docs/deployment/docker-mirror-china.md",
+    "docs/deployment/server-requirements.md",
     "docs/deployment/create-github-release.md",
     "docs/deployment/download-jar-from-github.md",
     "scripts/download-jar.sh",
@@ -228,9 +231,6 @@
     "docs/development/optimized_branded.md",
     "docs/plans/2026-02-09-android-ui-brand-enhancement.md",
     "2026-02-09.md",
-    "Untitled.canvas",
-    "docs/development/problem-solving-guide.md",
-    "backend/src/test/README.md",
-    "PROJECT_SUMMARY.md"
+    "Untitled.canvas"
   ]
 }

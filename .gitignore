@@ -115,7 +115,6 @@ android-app/app/build/jacoco/
 
 # ===== 部署 =====
 # JAR/WAR files
-*.jar
 *.zip
 *.war
 *.ear

@@ -1,0 +1,50 @@
+# Production Dockerfile - 直接使用预编译JAR包
+# 使用方法:
+#   1. 将JAR包放在 backend/target/userauth-backend-1.0.0.jar
+#   2. 构建: docker build -f Dockerfile.jar -t userauth-backend:jar .
+#   3. 运行: docker run -p 8080:8080 userauth-backend:jar
+
+FROM eclipse-temurin:17-jre-jammy
+
+# 创建应用用户
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+
+# 设置工作目录
+WORKDIR /app
+
+# 创建必要的目录
+RUN mkdir -p /app/logs /app/uploads && chown -R appuser:appuser /app
+
+# 复制JAR包（需要提前构建好）
+COPY target/userauth-backend-1.0.0.jar app.jar
+
+# 更改文件所有权
+RUN chown appuser:appuser app.jar
+
+# 切换到非root用户
+USER appuser
+
+# 暴露端口
+EXPOSE 8080
+
+# JVM内存优化参数（2GB服务器推荐）
+ENV JAVA_OPTS="-Xmx512m -Xms256m \
+  -XX:+UseG1GC \
+  -XX:MaxGCPauseMillis=200 \
+  -XX:+UseStringDeduplication \
+  -XX:MaxMetaspaceSize=128m \
+  -XX:CompressedClassSpaceSize=32m \
+  -XX:ReservedCodeCacheSize=64m \
+  -XX:+DisableExplicitGC \
+  -XX:+HeapDumpOnOutOfMemoryError \
+  -XX:HeapDumpPath=/app/logs \
+  -Djava.security.egd=file:/dev/./urandom \
+  -Dspring.backgroundpreinitializer.ignore=true \
+  -Dspring.jmx.enabled=false"
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+  CMD curl -f http://localhost:8080/actuator/health || exit 1
+
+# 运行应用
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
