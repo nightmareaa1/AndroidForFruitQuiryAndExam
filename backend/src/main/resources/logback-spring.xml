@@ -85,6 +85,9 @@
         <springProfile name="dev">
             <appender-ref ref="CONSOLE_DEV"/>
         </springProfile>
+        <springProfile name="light">
+            <appender-ref ref="CONSOLE"/>
+        </springProfile>
         <springProfile name="prod">
             <appender-ref ref="ASYNC_JSON"/>
             <appender-ref ref="ASYNC_PLAIN"/>
@@ -99,6 +102,9 @@
         <springProfile name="dev">
             <appender-ref ref="CONSOLE_DEV"/>
         </springProfile>
+        <springProfile name="light">
+            <appender-ref ref="CONSOLE"/>
+        </springProfile>
         <springProfile name="prod">
             <appender-ref ref="ASYNC_JSON"/>
         </springProfile>
@@ -109,6 +115,9 @@
         <springProfile name="dev">
             <appender-ref ref="CONSOLE_DEV"/>
         </springProfile>
+        <springProfile name="light">
+            <appender-ref ref="CONSOLE"/>
+        </springProfile>
         <springProfile name="prod">
             <appender-ref ref="ASYNC_JSON"/>
         </springProfile>
@@ -118,6 +127,9 @@
     <logger name="org.springframework.security" level="INFO" additivity="false">
         <springProfile name="dev">
             <appender-ref ref="CONSOLE_DEV"/>
+        </springProfile>
+        <springProfile name="light">
+            <appender-ref ref="CONSOLE"/>
         </springProfile>
         <springProfile name="prod">
             <appender-ref ref="ASYNC_JSON"/>
@@ -138,6 +150,9 @@
 
     <!-- Access log (HTTP requests) -->
     <logger name="com.example.userauth.controller" level="INFO" additivity="false">
+        <springProfile name="light">
+            <appender-ref ref="CONSOLE"/>
+        </springProfile>
         <springProfile name="prod">
             <appender-ref ref="ACCESS_LOG"/>
         </springProfile>

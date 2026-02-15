@@ -1,0 +1,168 @@
+# Lightweight Configuration for 2GB RAM Servers
+# Usage: SPRING_PROFILES_ACTIVE=light java -jar app.jar
+spring:
+  application:
+    name: userauth-backend
+
+  # Database Configuration - Optimized for low memory
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/userauth_dev?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:userauth}
+    password: ${SPRING_DATASOURCE_PASSWORD:SecureDbPass456$%^}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      # 2GB服务器优化：减少连接池大小
+      maximum-pool-size: 5          # 默认20/50 → 减少到5
+      minimum-idle: 2               # 默认5/10 → 减少到2
+      idle-timeout: 120000          # 2分钟，默认5/10分钟
+      connection-timeout: 15000     # 15秒
+      max-lifetime: 600000          # 10分钟
+      leak-detection-threshold: 30000
+      # 内存优化
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 100      # 减少缓存
+        prepStmtCacheSqlLimit: 512  # 减少SQL缓存
+
+  # JPA Configuration - Minimal memory usage
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        use_sql_comments: false
+        # 二级缓存禁用，减少内存
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
+    open-in-view: false
+
+  # Redis Configuration - Minimal connections
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      password: ${SPRING_REDIS_PASSWORD:}
+      timeout: 2000ms
+      lettuce:
+        pool:
+          max-active: 4               # 默认8/20 → 减少到4
+          max-idle: 2                 # 默认8/10 → 减少到2
+          min-idle: 0                 # 默认0/5 → 保持0
+          max-wait: 3000ms
+        shutdown-timeout: 100ms
+
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: false
+
+  # File Upload Configuration
+  servlet:
+    multipart:
+      max-file-size: ${MAX_FILE_SIZE:5MB}      # 减少到5MB
+      max-request-size: ${MAX_REQUEST_SIZE:10MB}
+      # 使用临时文件存储大文件，减少内存
+      file-size-threshold: 1MB
+
+  # Security Configuration
+  security:
+    user:
+      name: admin
+      password: admin
+      roles: ADMIN
+
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: never          # 减少响应体大小
+    include-binding-errors: never
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+  tomcat:
+    uri-encoding: UTF-8
+    # Tomcat线程池优化
+    threads:
+      max: 50                       # 默认200 → 减少到50
+      min-spare: 5                  # 默认10 → 减少到5
+    max-connections: 100            # 默认8192 → 减少到100
+    accept-count: 50                # 默认100 → 减少到50
+
+# Management/Actuator Configuration - Minimal exposure
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info          # 只暴露health和info，其他全部关闭
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: never
+      show-components: never
+  health:
+    redis:
+      enabled: false                  # 禁用Redis健康检查，减少连接
+    db:
+      enabled: true                   # 保留数据库检查
+    diskspace:
+      enabled: false                  # 禁用磁盘检查
+  metrics:
+    enabled: false                    # 禁用metrics减少内存
+
+# Application Specific Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:MySecureProductionKey2024WithAtLeast32Chars!}
+    expiration: ${JWT_EXPIRATION:86400000}
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
+
+  security:
+    bcrypt-strength: 10               # 默认12/14 → 减少到10，减少CPU和内存
+    key-rotation:
+      enabled: false                  # 禁用密钥轮换
+    password:
+      min-length: 8
+      max-length: 128
+      require-uppercase: true
+      require-lowercase: true
+      require-digit: true
+      require-special: false
+
+  file:
+    upload-dir: ${UPLOAD_PATH:./uploads}
+    max-size: ${MAX_FILE_SIZE:5MB}
+    allowed-types: jpg,jpeg,png,webp
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: "*"
+    allow-credentials: false
+
+# Logging Configuration - Minimal logging
+logging:
+  level:
+    root: WARN                        # 默认INFO → 提升到WARN
+    com.example.userauth: INFO        # 业务日志保持INFO
+    org.springframework.security: ERROR
+    org.springframework.web: WARN
+    org.hibernate.SQL: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    org.springframework.data.redis: ERROR
+    io.lettuce.core: ERROR
+  pattern:
+    console: "%d{HH:mm:ss} %-5level %logger{0} - %msg%n"
+  file:
+    name: ${LOG_FILE:logs/userauth-backend.log}
+    max-size: 50MB                    # 减少到50MB
+    max-history: 7                    # 保留7天
+    total-size-cap: 200MB             # 总日志大小限制
