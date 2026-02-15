@@ -116,15 +116,6 @@ jobs:
         reporter: java-junit
         fail-on-error: false
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        files: ./backend/target/site/jacoco/jacoco.xml
-        flags: backend
-        name: backend-coverage
-        fail_ci_if_error: true
-        verbose: true
-
     - name: Build backend JAR
       working-directory: ./backend
       run: mvn clean package -DskipTests
