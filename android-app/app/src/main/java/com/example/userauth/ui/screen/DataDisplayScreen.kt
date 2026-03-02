@@ -93,9 +93,9 @@ fun DataDisplayScreen(
                             Text(text = sub.contestant, style = MaterialTheme.typography.titleMedium)
                             Text(text = sub.title, style = MaterialTheme.typography.bodyMedium)
                         }
-                        val avg = sub.scores.map { it.score }.average()
+                        val avg = sub.averageTotalScore
                         Text(
-                            text = "Avg ${"%.1f".format(avg)}",
+                            text = "均分 ${"%.1f".format(avg)}",
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.primary
                         )

@@ -1,4 +1,5 @@
 package com.example.userauth.service;
+
 import com.example.userauth.dto.CompetitionRatingDataResponse;
 import com.example.userauth.entity.*;
 import com.example.userauth.repository.*;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 @Service
 @Transactional(readOnly = true)
 public class RatingDataService {
@@ -55,8 +57,7 @@ public class RatingDataService {
         List<Object[]> judgeTotals = ratingRepository.findJudgeTotalScoresByEntryId(entry.getId());
         
         List<CompetitionRatingDataResponse.ParameterAverageScore> parameterScores = new ArrayList<>();
-        double totalWeightedScore = 0.0;
-        int totalWeight = 0;
+        double totalScore = 0.0;
         int completedRatings = 0;
         double highestScore = 0.0;
         
@@ -73,19 +74,25 @@ public class RatingDataService {
             } else {
                 averageScore = 0.0;
             }
-            Long ratingCount = (Long) row[4];
+
+            int ratingCount;
+            Object countObj = row[4];
+            if (countObj instanceof Number) {
+                ratingCount = ((Number) countObj).intValue();
+            } else {
+                ratingCount = 0;
+            }
             
             CompetitionRatingDataResponse.ParameterAverageScore parameterAverage = 
                 new CompetitionRatingDataResponse.ParameterAverageScore(
-                    parameterId, parameterName, averageScore, parameterWeight, ratingCount.intValue()
+                    parameterId, parameterName, averageScore, parameterWeight, ratingCount
                 );
             
             parameterScores.add(parameterAverage);
-            totalWeightedScore += averageScore;
-            totalWeight += parameterWeight;
+            totalScore += averageScore;
             
             if (completedRatings == 0) {
-                completedRatings = ratingCount.intValue();
+                completedRatings = ratingCount;
             }
         }
         
@@ -107,10 +114,8 @@ public class RatingDataService {
             }
         }
         
-        // Calculate weighted average score
-        Double averageTotalScore = (totalWeight > 0 && !parameterScores.isEmpty()) 
-            ? totalWeightedScore / totalWeight 
-            : 0.0;
+        // Calculate total score (averageScore is already the actual score for each parameter)
+        Double averageTotalScore = totalScore;
         
         return new CompetitionRatingDataResponse.EntryRatingData(
             entry.getId(),

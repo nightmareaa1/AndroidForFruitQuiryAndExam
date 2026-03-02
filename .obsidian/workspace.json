@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "backend/README.md",
+                "file": "docs/deployment/android-connect-backend.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "README"
+              "title": "android-connect-backend"
             }
           },
           {
@@ -84,7 +84,8 @@
               "title": "Bookmarks"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -195,24 +196,24 @@
   },
   "active": "a55ae532429fc394",
   "lastOpenFiles": [
+    "android-app/app/build/intermediates/dex/debug/mergeProjectDexDebug/8/classes.dex",
     "android-app/app/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/dirty-output-classes.tab_i",
     "android-app/app/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/dirty-output-classes.tab_i.len",
+    "android-app/app/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/dirty-output-classes.tab",
+    "android-app/app/build/kotlin/compileDebugKotlin/cacheable/caches-jvm/jvm/kotlin/dirty-output-classes.tab.len",
     "android-app/app/build/snapshot/kotlin/compileDebugKotlin/2.zip",
     "android-app/app/build/snapshot/kotlin/compileDebugKotlin/1.zip",
     "android-app/app/build/snapshot/kotlin/compileDebugKotlin/0.zip",
     "android-app/app/build/snapshot/kotlin/compileDebugKotlin",
-    "android-app/app/build/generated/ksp/debug/java/hilt_aggregated_deps/_com_example_userauth_viewmodel_UserViewModel_HiltModules_KeyModule.java",
-    "android-app/app/build/generated/ksp/debug/java/hilt_aggregated_deps/_com_example_userauth_viewmodel_UserViewModel_HiltModules_BindsModule.java",
-    "android-app/app/build/generated/ksp/debug/java/hilt_aggregated_deps/_com_example_userauth_viewmodel_ScoreViewModel_HiltModules_KeyModule.java",
-    "android-app/app/build/generated/ksp/debug/java/hilt_aggregated_deps/_com_example_userauth_viewmodel_ScoreViewModel_HiltModules_BindsModule.java",
-    "android-app/app/build/generated/ksp/debug/java/hilt_aggregated_deps/_com_example_userauth_viewmodel_RatingViewModel_HiltModules_KeyModule.java",
+    "android-app/app/build/generated/ksp/debug/java/byRounds/1/dagger/hilt/internal",
+    "android-app/app/build/generated/ksp/debug/java/byRounds/1/com/example/userauth",
+    "backend/README.md",
     "docs/deployment/android-connect-backend.md",
     "docs/development/problem-solving-guide.md",
     "docs/plans/2026-02-13-database-optimization-plan.md",
     "docs/deployment/backend-deployment-guide.md",
     "docs/deployment/jar-deployment-guide.md",
     "backend/validate-database-tests.md",
-    "backend/README.md",
     "docs/development/database-integration-test-issues.md",
     "docs/development/MONITORING_LOGGING.md",
     "docs/development/android-backend-crud-integration-plan.md",

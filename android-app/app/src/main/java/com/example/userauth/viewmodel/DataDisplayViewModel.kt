@@ -81,7 +81,7 @@ class DataDisplayViewModel @Inject constructor(
                                     score = param.averageScore.toInt()
                                 )
                             }.toMutableList(),
-                            averageTotalScore = entry.averageTotalScore * 100,
+                            averageTotalScore = entry.averageTotalScore,
                             highestScore = entry.highestScore ?: 0.0,
                             numberOfRatings = entry.numberOfRatings,
                             totalJudges = entry.totalJudges ?: 0
