@@ -55,6 +55,7 @@ data class CompetitionRatingDataResponseDto(
     val competitionId: Long,
     val competitionName: String,
     val modelId: Long?,
+    val totalJudges: Int?,
     val entries: List<EntryRatingDataDto>
 )
 
@@ -64,7 +65,9 @@ data class EntryRatingDataDto(
     val contestantName: String,
     val filePath: String? = null,
     val averageTotalScore: Double,
+    val highestScore: Double?,
     val numberOfRatings: Int,
+    val totalJudges: Int?,  // 评委总数
     val parameterScores: List<ParameterAverageScoreDto>
 )
 

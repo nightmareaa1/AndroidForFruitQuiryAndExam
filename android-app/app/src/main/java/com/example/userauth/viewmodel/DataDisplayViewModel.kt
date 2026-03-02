@@ -80,7 +80,11 @@ class DataDisplayViewModel @Inject constructor(
                                     max = param.weight,
                                     score = param.averageScore.toInt()
                                 )
-                            }.toMutableList()
+                            }.toMutableList(),
+                            averageTotalScore = entry.averageTotalScore * 100,
+                            highestScore = entry.highestScore ?: 0.0,
+                            numberOfRatings = entry.numberOfRatings,
+                            totalJudges = entry.totalJudges ?: 0
                         )
                     }
                 }.onFailure { exception ->
@@ -141,7 +145,7 @@ class DataDisplayViewModel @Inject constructor(
                 val m = sub.scores.find { it.name == name }
                 m?.score ?: 0
             }.sum()
-            val count = submissions.value.map { it.scores.find { it.name == name } ?: 0 }.size
+            val count = submissions.value.map { sub -> sub.scores.find { it.name == name } ?: 0 }.size
             val avg = if (count > 0) total.toFloat() / count else 0f
             ParameterAverage(name, avg)
         }

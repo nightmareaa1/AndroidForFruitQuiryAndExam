@@ -85,4 +85,10 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
     @Modifying
     @Query("UPDATE Competition c SET c.deletedAt = CURRENT_TIMESTAMP WHERE c.id = :id")
     void softDeleteById(@Param("id") Long id);
+
+    /**
+     * Find competition by id with creator (for permission checks)
+     */
+    @Query("SELECT c FROM Competition c LEFT JOIN FETCH c.creator WHERE c.id = :id")
+    Optional<Competition> findByIdWithCreator(@Param("id") Long id);
 }

@@ -11,16 +11,18 @@ public class CompetitionRatingDataResponse {
     private Long competitionId;
     private String competitionName;
     private Long modelId;
+    private Integer totalJudges;
     private List<EntryRatingData> entries;
 
     // Default constructor
     public CompetitionRatingDataResponse() {}
 
     // Constructor
-    public CompetitionRatingDataResponse(Long competitionId, String competitionName, Long modelId, List<EntryRatingData> entries) {
+    public CompetitionRatingDataResponse(Long competitionId, String competitionName, Long modelId, Integer totalJudges, List<EntryRatingData> entries) {
         this.competitionId = competitionId;
         this.competitionName = competitionName;
         this.modelId = modelId;
+        this.totalJudges = totalJudges;
         this.entries = entries;
     }
     
@@ -49,6 +51,14 @@ public class CompetitionRatingDataResponse {
         this.modelId = modelId;
     }
 
+    public Integer getTotalJudges() {
+        return totalJudges;
+    }
+
+    public void setTotalJudges(Integer totalJudges) {
+        this.totalJudges = totalJudges;
+    }
+
     public List<EntryRatingData> getEntries() {
         return entries;
     }
@@ -67,7 +77,9 @@ public class CompetitionRatingDataResponse {
         private String contestantName;
         private String filePath;
         private Double averageTotalScore;
+        private Double highestScore;
         private Integer numberOfRatings;
+        private Integer totalJudges;
         private List<ParameterAverageScore> parameterScores;
         
         // Default constructor
@@ -75,14 +87,16 @@ public class CompetitionRatingDataResponse {
         
         // Constructor
         public EntryRatingData(Long entryId, String entryName, String contestantName, String filePath,
-                              Double averageTotalScore, Integer numberOfRatings,
-                              List<ParameterAverageScore> parameterScores) {
+                              Double averageTotalScore, Double highestScore, Integer numberOfRatings,
+                              Integer totalJudges, List<ParameterAverageScore> parameterScores) {
             this.entryId = entryId;
             this.entryName = entryName;
             this.contestantName = contestantName;
             this.filePath = filePath;
             this.averageTotalScore = averageTotalScore;
+            this.highestScore = highestScore;
             this.numberOfRatings = numberOfRatings;
+            this.totalJudges = totalJudges;
             this.parameterScores = parameterScores;
         }
         
@@ -127,12 +141,28 @@ public class CompetitionRatingDataResponse {
             this.averageTotalScore = averageTotalScore;
         }
         
+        public Double getHighestScore() {
+            return highestScore;
+        }
+        
+        public void setHighestScore(Double highestScore) {
+            this.highestScore = highestScore;
+        }
+        
         public Integer getNumberOfRatings() {
             return numberOfRatings;
         }
         
         public void setNumberOfRatings(Integer numberOfRatings) {
             this.numberOfRatings = numberOfRatings;
+        }
+        
+        public Integer getTotalJudges() {
+            return totalJudges;
+        }
+        
+        public void setTotalJudges(Integer totalJudges) {
+            this.totalJudges = totalJudges;
         }
         
         public List<ParameterAverageScore> getParameterScores() {

@@ -7,6 +7,7 @@ import com.example.userauth.data.api.EvaluationApiService
 import com.example.userauth.data.api.FruitAdminApi
 import com.example.userauth.data.api.FruitDataApi
 import com.example.userauth.data.api.FruitDataAdminApi
+import com.example.userauth.data.api.UserApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -58,5 +59,11 @@ object ApiModule {
     @Singleton
     fun provideFruitDataAdminApi(retrofit: Retrofit): FruitDataAdminApi {
         return retrofit.create(FruitDataAdminApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideUserApi(retrofit: Retrofit): UserApi {
+        return retrofit.create(UserApi::class.java)
     }
 }

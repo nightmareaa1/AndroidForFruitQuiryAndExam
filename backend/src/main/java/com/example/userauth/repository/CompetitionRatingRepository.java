@@ -74,4 +74,13 @@ public interface CompetitionRatingRepository extends JpaRepository<CompetitionRa
            "WHERE r.competition.id = :competitionId " +
            "ORDER BY e.displayOrder, j.username, p.displayOrder")
     List<CompetitionRating> findByCompetitionIdForExport(@Param("competitionId") Long competitionId);
+
+    /**
+     * Get total score per judge for an entry
+     * Returns [judgeTotalScore]
+     */
+    @Query("SELECT SUM(r.score) FROM CompetitionRating r " +
+           "WHERE r.entry.id = :entryId " +
+           "GROUP BY r.judge.id")
+    List<Object[]> findJudgeTotalScoresByEntryId(@Param("entryId") Long entryId);
 }

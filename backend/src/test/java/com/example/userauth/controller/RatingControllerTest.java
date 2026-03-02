@@ -169,7 +169,7 @@ class RatingControllerTest {
     @Test
     @DisplayName("Should get competition rating data successfully")
     void getCompetitionRatingData_Success() throws Exception {
-        CompetitionRatingDataResponse resp = new CompetitionRatingDataResponse(1L, "Test Competition", 1L, Collections.emptyList());
+        CompetitionRatingDataResponse resp = new CompetitionRatingDataResponse(1L, "Test Competition", 1L, 0, Collections.emptyList());
         when(ratingDataService.canViewRatingData(anyLong(), anyLong())).thenReturn(true);
         when(ratingDataService.getCompetitionRatingData(anyLong())).thenReturn(resp);
 

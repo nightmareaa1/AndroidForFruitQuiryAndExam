@@ -57,7 +57,8 @@ class CompetitionRepository @Inject constructor(
         name: String,
         deadline: String,
         modelId: Long,
-        description: String = ""
+        description: String = "",
+        judgeIds: List<Long>? = null
     ): Result<Competition> {
         return try {
             val isoDeadline = "${deadline}T23:59:59"
@@ -66,7 +67,7 @@ class CompetitionRepository @Inject constructor(
                 description = description,
                 modelId = modelId,
                 deadline = isoDeadline,
-                judgeIds = null
+                judgeIds = judgeIds
             )
             val response = api.createCompetition(request)
             if (response.isSuccessful) {
@@ -86,7 +87,8 @@ class CompetitionRepository @Inject constructor(
         name: String,
         deadline: String,
         modelId: Long,
-        description: String = ""
+        description: String = "",
+        judgeIds: List<Long>? = null
     ): Result<Competition> {
         return try {
             val isoDeadline = "${deadline}T23:59:59"
@@ -95,7 +97,7 @@ class CompetitionRepository @Inject constructor(
                 description = description,
                 modelId = modelId,
                 deadline = isoDeadline,
-                judgeIds = null
+                judgeIds = judgeIds
             )
             val response = api.updateCompetition(id, request)
             if (response.isSuccessful) {
@@ -281,6 +283,32 @@ class CompetitionRepository @Inject constructor(
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("更新作品失败: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun addJudges(competitionId: Long, judgeIds: List<Long>): Result<Unit> {
+        return try {
+            val response = api.addJudges(competitionId, judgeIds)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to add judges: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun removeJudge(competitionId: Long, judgeId: Long): Result<Unit> {
+        return try {
+            val response = api.removeJudge(competitionId, judgeId)
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Failed to remove judge: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(e)

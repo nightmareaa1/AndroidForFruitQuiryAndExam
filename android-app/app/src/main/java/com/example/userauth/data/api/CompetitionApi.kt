@@ -62,4 +62,10 @@ interface CompetitionApi {
         @Part("entry") request: EntryRequestDto,
         @Part file: okhttp3.MultipartBody.Part?
     ): Response<Void>
+
+    @POST("competitions/{id}/judges")
+    suspend fun addJudges(@Path("id") id: Long, @Body judgeIds: List<Long>): Response<Void>
+
+    @DELETE("competitions/{id}/judges/{judgeId}")
+    suspend fun removeJudge(@Path("id") id: Long, @Path("judgeId") judgeId: Long): Response<Void>
 }

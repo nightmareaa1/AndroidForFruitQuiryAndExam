@@ -182,7 +182,15 @@ public class SecurityConfig {
                 
                 // Admin-only endpoints
                 .requestMatchers("/actuator/**").hasRole("ADMIN")
-                .requestMatchers("/api/admin/fruit-data/**").hasRole("ADMIN")
+                // Admin write operations need ADMIN role
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/admin/fruit-data/**").hasRole("ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/admin/fruit-data/**").hasRole("ADMIN")
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/admin/fruit-data/**").hasRole("ADMIN")
+                // Read operations (data-types, fruits, table data) are allowed for all authenticated users
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/admin/fruit-data/data-types").authenticated()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/admin/fruit-data/fruits").authenticated()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/admin/fruit-data/data").authenticated()
+                .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/admin/fruit-data/fields/**").authenticated()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/evaluation-models").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/evaluation-models/**").hasRole("ADMIN")
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/evaluation-models/**").hasRole("ADMIN")
