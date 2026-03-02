@@ -28,4 +28,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return true if user exists, false otherwise
      */
     boolean existsByUsername(String username);
+
+    long countByIsAdminTrue();
 }

@@ -235,6 +235,20 @@ class CompetitionManagementViewModel @Inject constructor(
         _searchQuery.value = ""
     }
 
+    fun addJudgeForCreation(judgeId: Long) {
+        val current = _existingJudgeIds.value.toMutableList()
+        if (!current.contains(judgeId)) {
+            current.add(judgeId)
+            _existingJudgeIds.value = current
+        }
+    }
+
+    fun removeJudgeForCreation(judgeId: Long) {
+        val current = _existingJudgeIds.value.toMutableList()
+        current.remove(judgeId)
+        _existingJudgeIds.value = current
+    }
+
     fun addCompetition(
         name: String,
         deadline: String,

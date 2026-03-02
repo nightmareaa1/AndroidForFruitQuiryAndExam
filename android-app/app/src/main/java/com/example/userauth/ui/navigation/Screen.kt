@@ -22,6 +22,7 @@ sealed class Screen(val route: String) {
     object FruitNutrition : Screen("fruit_nutrition")
     object FruitManagement : Screen("fruit_management")
     object ModelManagement : Screen("model_management")
+    object UserManagement : Screen("user_management")
     object CompetitionManagement : Screen("competition_management")
     object CompetitionEdit : Screen("competition_edit/{competitionId}")
     object CompetitionAdd : Screen("competition_add")

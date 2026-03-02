@@ -13,6 +13,7 @@ import com.example.userauth.ui.screen.LoginScreen
 import com.example.userauth.ui.screen.AdminScreen
 import com.example.userauth.ui.screen.ModelManagementScreen
 import com.example.userauth.ui.screen.CompetitionManagementScreen
+import com.example.userauth.ui.screen.UserManagementScreen
 import com.example.userauth.ui.screen.CompetitionEditScreen
 import com.example.userauth.ui.screen.CompetitionAddScreen
 import com.example.userauth.ui.screen.ScoreScreen
@@ -173,9 +174,21 @@ fun NavGraph(navController: NavHostController) {
             AdminScreen(
                 onBack = { navController.popBackStack() },
                 onNavigateToModelManagement = { navController.navigate(Screen.ModelManagement.route) },
+                onNavigateToUserManagement = { navController.navigate(Screen.UserManagement.route) },
                 onNavigateToCompetitionManagement = { navController.navigate(Screen.CompetitionManagement.route) },
                 onNavigateToFruitManagement = { navController.navigate(Screen.FruitManagement.route) }
             )
+        }
+        composable(Screen.UserManagement.route) {
+            if (!authViewModel.isCurrentUserAdmin()) {
+                LaunchedEffect(Unit) {
+                    navController.navigate(Screen.Main.route) {
+                        popUpTo(Screen.UserManagement.route) { inclusive = true }
+                    }
+                }
+                return@composable
+            }
+            UserManagementScreen(onBack = { navController.popBackStack() })
         }
         // Model management route - requires admin privileges
         composable(Screen.ModelManagement.route) {

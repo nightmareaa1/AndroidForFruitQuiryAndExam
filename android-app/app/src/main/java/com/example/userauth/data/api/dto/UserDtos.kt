@@ -10,3 +10,13 @@ data class UserDto(
     val roles: List<String>,
     val createdAt: String?
 )
+
+data class AdminCreateUserRequestDto(
+    val username: String,
+    val password: String,
+    val isAdmin: Boolean
+)
+
+data class UserRoleUpdateRequestDto(
+    val isAdmin: Boolean
+)

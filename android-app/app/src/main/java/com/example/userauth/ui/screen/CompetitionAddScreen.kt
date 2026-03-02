@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
@@ -12,9 +15,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.userauth.ui.components.ExistingJudgesList
 import com.example.userauth.viewmodel.CompetitionManagementViewModel
 import com.example.userauth.viewmodel.ModelViewModel
-import com.example.userauth.ui.components.JudgeSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +29,7 @@ fun CompetitionAddScreen(
     val models by modelViewModel.models.collectAsState()
     val users by viewModel.users.collectAsState()
     val filteredUsers by viewModel.filteredUsers.collectAsState()
-    val selectedJudgeIds by viewModel.selectedJudgeIds.collectAsState()
+    val existingJudgeIds by viewModel.existingJudgeIds.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
@@ -159,15 +162,132 @@ fun CompetitionAddScreen(
             }
 
             item {
-                JudgeSelector(
-                    users = users,
-                    filteredUsers = filteredUsers,
-                    selectedJudgeIds = selectedJudgeIds,
-                    searchQuery = searchQuery,
-                    onSearchQueryChange = { viewModel.setSearchQuery(it) },
-                    onToggleJudge = { viewModel.toggleJudgeSelection(it) },
-                    isEditMode = false
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "已有评委",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ExistingJudgesList(
+                    users = users,
+                    existingJudgeIds = existingJudgeIds,
+                    onRemoveJudge = { judgeId ->
+                        viewModel.removeJudgeForCreation(judgeId)
+                    },
+                    isLoading = isLoading
+                )
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "添加评委",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { viewModel.setSearchQuery(it) },
+                    label = { Text("搜索用户") },
+                    leadingIcon = {
+                        Icon(imageVector = Icons.Default.Search, contentDescription = "搜索")
+                    },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.setSearchQuery("") }) {
+                                Icon(imageVector = Icons.Default.Close, contentDescription = "清除")
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                val usersToShow = if (searchQuery.isBlank()) {
+                    emptyList()
+                } else {
+                    filteredUsers.filter { !existingJudgeIds.contains(it.id) }
+                }
+
+                if (usersToShow.isNotEmpty()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Column(modifier = Modifier.padding(8.dp)) {
+                            Text(
+                                text = "搜索结果",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            usersToShow.forEach { user ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp, horizontal = 4.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Person,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column {
+                                            Text(
+                                                text = user.username ?: "未知用户",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = if (user.roles.contains("ADMIN")) "管理员" else "用户",
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            viewModel.addJudgeForCreation(user.id)
+                                            viewModel.setSearchQuery("")
+                                        },
+                                        enabled = !isLoading
+                                    ) {
+                                        Text("添加")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if (searchQuery.isNotBlank()) {
+                    Text(
+                        text = "未找到用户",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
 
             item {
@@ -182,7 +302,7 @@ fun CompetitionAddScreen(
                                 name = name,
                                 deadline = deadline,
                                 modelId = modelId.toLong(),
-                                judgeIds = selectedJudgeIds.ifEmpty { null }
+                                judgeIds = existingJudgeIds.ifEmpty { null }
                             )
                             onBack()
                         }

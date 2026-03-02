@@ -21,6 +21,7 @@ import com.example.userauth.viewmodel.UserViewModel
 fun AdminScreen(
     onBack: () -> Unit,
     onNavigateToModelManagement: (() -> Unit)? = null,
+    onNavigateToUserManagement: (() -> Unit)? = null,
     onNavigateToCompetitionManagement: (() -> Unit)? = null,
     onNavigateToFruitManagement: (() -> Unit)? = null,
     viewModel: UserViewModel = hiltViewModel()
@@ -54,6 +55,13 @@ fun AdminScreen(
                     modifier = Modifier.fillMaxWidth(0.8f)
                 ) {
                     Text("模型管理入口")
+                }
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = { onNavigateToUserManagement?.invoke() },
+                    modifier = Modifier.fillMaxWidth(0.8f)
+                ) {
+                    Text("用户管理入口")
                 }
                 Spacer(Modifier.height(12.dp))
                 Button(

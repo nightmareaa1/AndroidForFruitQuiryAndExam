@@ -1,6 +1,7 @@
 package com.example.userauth.service;
 
 import com.example.userauth.dto.AuthResponse;
+import com.example.userauth.dto.AdminCreateUserRequest;
 import com.example.userauth.dto.LoginRequest;
 import com.example.userauth.dto.RegisterRequest;
 import com.example.userauth.dto.UserResponse;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.regex.Pattern;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Service for user management operations.
@@ -211,5 +214,56 @@ public class UserService {
     @Transactional(readOnly = true)
     public boolean usernameExists(String username) {
         return userRepository.existsByUsername(username);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+            .map(UserResponse::fromUser)
+            .collect(Collectors.toList());
+    }
+
+    public UserResponse createUserByAdmin(AdminCreateUserRequest request) {
+        validateUsername(request.getUsername());
+        validatePassword(request.getPassword());
+
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
+        String hashedPassword = passwordService.hashPassword(request.getPassword());
+        User user = new User(request.getUsername().trim(), hashedPassword, Boolean.TRUE.equals(request.getIsAdmin()));
+        return UserResponse.fromUser(userRepository.save(user));
+    }
+
+    public UserResponse updateUserAdminRole(Long userId, boolean isAdmin, String currentUsername) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getUsername().equals(currentUsername) && user.isAdmin() && !isAdmin) {
+            throw new IllegalArgumentException("Cannot remove admin role from current logged-in user");
+        }
+
+        if (user.isAdmin() && !isAdmin && userRepository.countByIsAdminTrue() <= 1) {
+            throw new IllegalArgumentException("System must keep at least one admin user");
+        }
+
+        user.setIsAdmin(isAdmin);
+        return UserResponse.fromUser(userRepository.save(user));
+    }
+
+    public void deleteUserById(Long userId, String currentUsername) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getUsername().equals(currentUsername)) {
+            throw new IllegalArgumentException("Cannot delete current logged-in user");
+        }
+
+        if (user.isAdmin() && userRepository.countByIsAdminTrue() <= 1) {
+            throw new IllegalArgumentException("System must keep at least one admin user");
+        }
+
+        userRepository.delete(user);
     }
 }
