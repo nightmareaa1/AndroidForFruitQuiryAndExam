@@ -91,8 +91,14 @@ public class CompetitionService {
     @Transactional(readOnly = true)
     public Optional<CompetitionResponse> getCompetitionById(Long id) {
         logger.info("Fetching active competition with id: {}", id);
-        Optional<Competition> competition = competitionRepository.findActiveByIdWithDetails(id);
-        return competition.map(this::convertToResponse);
+        try {
+            Optional<Competition> competition = competitionRepository.findActiveByIdWithDetails(id);
+            logger.info("Found competition: {}", competition.isPresent());
+            return competition.map(this::convertToResponse);
+        } catch (Exception e) {
+            logger.error("Error in getCompetitionById for id {}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
     
     /**

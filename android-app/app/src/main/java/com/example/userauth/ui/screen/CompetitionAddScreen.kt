@@ -3,7 +3,6 @@ package com.example.userauth.ui.screen
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
@@ -15,7 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.userauth.viewmodel.CompetitionManagementViewModel
 import com.example.userauth.viewmodel.ModelViewModel
-import com.example.userauth.data.api.dto.UserDto
+import com.example.userauth.ui.components.JudgeSelector
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +25,9 @@ fun CompetitionAddScreen(
 ) {
     val models by modelViewModel.models.collectAsState()
     val users by viewModel.users.collectAsState()
+    val filteredUsers by viewModel.filteredUsers.collectAsState()
     val selectedJudgeIds by viewModel.selectedJudgeIds.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     var name by remember { mutableStateOf("") }
@@ -34,7 +35,6 @@ fun CompetitionAddScreen(
     var selectedModelId by remember { mutableStateOf<String?>(null) }
     var showModelDropdown by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
-    var showUserDropdown by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         modelViewModel.loadModels()
@@ -159,99 +159,15 @@ fun CompetitionAddScreen(
             }
 
             item {
-                Box(modifier = Modifier.fillMaxWidth()) {
-                    val selectedJudgesText = if (selectedJudgeIds.isEmpty()) {
-                        "选择评委（可选）"
-                    } else {
-                        "已选择 ${selectedJudgeIds.size} 位评委"
-                    }
-                    OutlinedTextField(
-                        value = selectedJudgesText,
-                        onValueChange = { },
-                        label = { Text("评委") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { showUserDropdown = true },
-                        readOnly = true,
-                        trailingIcon = {
-                            TextButton(onClick = { showUserDropdown = true }) {
-                                Text("选择")
-                            }
-                        }
-                    )
-
-                    DropdownMenu(
-                        expanded = showUserDropdown,
-                        onDismissRequest = { showUserDropdown = false },
-                        modifier = Modifier.heightIn(max = 300.dp)
-                    ) {
-                        if (users.isEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text("加载中...", color = MaterialTheme.colorScheme.onSurfaceVariant) },
-                                onClick = { }
-                            )
-                        } else {
-                            users.forEach { user ->
-                                val isSelected = selectedJudgeIds.contains(user.id)
-                                DropdownMenuItem(
-                                    text = {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Checkbox(
-                                                checked = isSelected,
-                                                onCheckedChange = { viewModel.toggleJudgeSelection(user.id) }
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Column {
-                                                Text(user.username)
-                                                Text(
-                                                    text = if (user.roles.contains("ADMIN")) "管理员" else "用户",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                )
-                                            }
-                                        }
-                                    },
-                                    onClick = { viewModel.toggleJudgeSelection(user.id) }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                if (selectedJudgeIds.isNotEmpty()) {
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "已选评委",
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            users.filter { selectedJudgeIds.contains(it.id) }.forEach { user ->
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(user.username, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                                    TextButton(onClick = { viewModel.toggleJudgeSelection(user.id) }) {
-                                        Text("移除")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                JudgeSelector(
+                    users = users,
+                    filteredUsers = filteredUsers,
+                    selectedJudgeIds = selectedJudgeIds,
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { viewModel.setSearchQuery(it) },
+                    onToggleJudge = { viewModel.toggleJudgeSelection(it) },
+                    isEditMode = false
+                )
             }
 
             item {

@@ -7,5 +7,6 @@ data class Competition(
     val creatorId: Long,
     val deadline: String,
     val status: String,
-    val description: String = ""
+    val description: String = "",
+    val judges: List<Long> = emptyList()
 )

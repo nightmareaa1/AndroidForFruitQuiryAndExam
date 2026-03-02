@@ -6,7 +6,7 @@ package com.example.userauth.data.api.dto
  */
 data class UserDto(
     val id: Long,
-    val username: String,
+    val username: String?,
     val roles: List<String>,
     val createdAt: String?
 )

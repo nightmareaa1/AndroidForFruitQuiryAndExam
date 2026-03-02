@@ -10,7 +10,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import javax.inject.Inject
 
 @HiltViewModel
@@ -34,8 +38,14 @@ class CompetitionManagementViewModel @Inject constructor(
     private val _users = MutableStateFlow<List<UserDto>>(emptyList())
     val users: StateFlow<List<UserDto>> = _users.asStateFlow()
 
+    private val _existingJudgeIds = MutableStateFlow<List<Long>>(emptyList())
+    val existingJudgeIds: StateFlow<List<Long>> = _existingJudgeIds.asStateFlow()
+
     private val _selectedJudgeIds = MutableStateFlow<List<Long>>(emptyList())
     val selectedJudgeIds: StateFlow<List<Long>> = _selectedJudgeIds.asStateFlow()
+
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     init {
         loadCompetitions()
@@ -52,6 +62,51 @@ class CompetitionManagementViewModel @Inject constructor(
                 }
                 .onFailure { e ->
                     _error.value = e.message
+                }
+
+            _isLoading.value = false
+        }
+    }
+
+    fun loadCompetitionDetail(competitionId: Long) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+            
+            // 确保用户数据先加载
+            if (_users.value.isEmpty()) {
+                loadUsers()
+                // 等待用户数据加载完成
+                delay(500) // 简单等待一下
+            }
+
+            // 检查用户是否已登录
+            println("[DEBUG] 检查用户登录状态")
+            // TODO: 这里可以添加登录状态检查
+
+            // 添加调试日志
+            println("[DEBUG] 正在调用repository.getCompetitionById(competitionId=$competitionId)")
+            repository.getCompetitionById(competitionId)
+                .onSuccess { competitionDto ->
+                    val comp = Competition(
+                        id = competitionDto.id,
+                        name = competitionDto.name,
+                        modelId = competitionDto.modelId ?: 0L,
+                        creatorId = competitionDto.creatorId ?: 0L,
+                        deadline = competitionDto.deadline?.substring(0, 10) ?: "",
+                        status = competitionDto.status ?: "ACTIVE",
+                        description = competitionDto.description ?: "",
+                        judges = competitionDto.judges?.map { it.userId } ?: emptyList()
+                    )
+                    _selectedCompetition.value = comp
+                    _existingJudgeIds.value = comp.judges.toMutableList()
+                    _selectedJudgeIds.value = emptyList()
+                }
+                .onFailure { e ->
+                    // 添加详细的错误日志
+                    println("[ERROR] getCompetitionById调用失败: ${e.message}")
+                    e.printStackTrace()
+                    _error.value = "加载赛事详情失败: ${e.message}"
                 }
 
             _isLoading.value = false
@@ -75,6 +130,20 @@ class CompetitionManagementViewModel @Inject constructor(
         }
     }
 
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    val filteredUsers: StateFlow<List<UserDto>> = combine(users, searchQuery) { users, query ->
+        if (query.isBlank()) {
+            users
+        } else {
+            users.filter { user ->
+                user.username?.contains(query, ignoreCase = true) == true
+            }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
     fun selectCompetition(competition: Competition?) {
         _selectedCompetition.value = competition
     }
@@ -93,8 +162,77 @@ class CompetitionManagementViewModel @Inject constructor(
         _selectedJudgeIds.value = current
     }
 
+    fun removeExistingJudge(competitionId: Long, judgeId: Long) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+
+            repository.removeJudge(competitionId, judgeId)
+                .onSuccess {
+                    val current = _existingJudgeIds.value.toMutableList()
+                    current.remove(judgeId)
+                    _existingJudgeIds.value = current
+                    loadCompetitions()
+                }
+                .onFailure { e ->
+                    _error.value = e.message
+                }
+
+            _isLoading.value = false
+        }
+    }
+
+    fun addNewJudges(competitionId: Long) {
+        val judgeIdsToAdd = _selectedJudgeIds.value
+        if (judgeIdsToAdd.isEmpty()) return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+
+            repository.addJudges(competitionId, judgeIdsToAdd)
+                .onSuccess {
+                    val current = _existingJudgeIds.value.toMutableList()
+                    current.addAll(judgeIdsToAdd)
+                    _existingJudgeIds.value = current
+                    _selectedJudgeIds.value = emptyList()
+                    loadCompetitions()
+                }
+                .onFailure { e ->
+                    _error.value = e.message
+                }
+
+            _isLoading.value = false
+        }
+    }
+    
+    fun addNewJudges(competitionId: Long, judgeIds: List<Long>) {
+        if (judgeIds.isEmpty()) return
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            _error.value = null
+
+            repository.addJudges(competitionId, judgeIds)
+                .onSuccess {
+                    val current = _existingJudgeIds.value.toMutableList()
+                    current.addAll(judgeIds)
+                    _existingJudgeIds.value = current
+                    _selectedJudgeIds.value = emptyList()
+                    loadCompetitions()
+                }
+                .onFailure { e ->
+                    _error.value = e.message
+                }
+
+            _isLoading.value = false
+        }
+    }
+
     fun clearSelectedJudges() {
         _selectedJudgeIds.value = emptyList()
+        _existingJudgeIds.value = emptyList()
+        _searchQuery.value = ""
     }
 
     fun addCompetition(
@@ -137,40 +275,6 @@ class CompetitionManagementViewModel @Inject constructor(
                     _error.value = e.message
                     _isLoading.value = false
                 }
-        }
-    }
-
-    fun addJudgesToCompetition(competitionId: Long, judgeIds: List<Long>) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-
-            repository.addJudges(competitionId, judgeIds)
-                .onSuccess {
-                    loadCompetitions()
-                }
-                .onFailure { e ->
-                    _error.value = e.message
-                }
-
-            _isLoading.value = false
-        }
-    }
-
-    fun removeJudgeFromCompetition(competitionId: Long, judgeId: Long) {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-
-            repository.removeJudge(competitionId, judgeId)
-                .onSuccess {
-                    loadCompetitions()
-                }
-                .onFailure { e ->
-                    _error.value = e.message
-                }
-
-            _isLoading.value = false
         }
     }
 

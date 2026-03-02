@@ -5,7 +5,9 @@ import com.example.userauth.dto.CompetitionResponse;
 import com.example.userauth.dto.EntryRequest;
 import com.example.userauth.dto.EntryStatusUpdateRequest;
 import com.example.userauth.dto.EntrySubmitResponse;
+import com.example.userauth.entity.Competition;
 import com.example.userauth.entity.User;
+import com.example.userauth.repository.CompetitionRepository;
 import com.example.userauth.repository.UserRepository;
 import com.example.userauth.security.RequireAdmin;
 import com.example.userauth.service.CompetitionService;
@@ -44,6 +46,9 @@ public class CompetitionController {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private CompetitionRepository competitionRepository;
     
     /**
      * Get all competitions
@@ -447,6 +452,10 @@ public class CompetitionController {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Current user not found: " + username));
     }
+    
+    /**
+     * Create error response object
+     */
     
     /**
      * Create error response object

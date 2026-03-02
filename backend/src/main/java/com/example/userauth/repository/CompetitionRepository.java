@@ -70,12 +70,8 @@ public interface CompetitionRepository extends JpaRepository<Competition, Long> 
      * Find non-deleted competition by id with details
      */
     @Query("SELECT c FROM Competition c " +
-           "LEFT JOIN FETCH c.model m " +
-           "LEFT JOIN FETCH m.parameters " +
+           "LEFT JOIN FETCH c.model " +
            "LEFT JOIN FETCH c.creator " +
-           "LEFT JOIN FETCH c.judges j " +
-           "LEFT JOIN FETCH j.judge " +
-           "LEFT JOIN FETCH c.entries e " +
            "WHERE c.id = :id AND c.deletedAt IS NULL")
     Optional<Competition> findActiveByIdWithDetails(@Param("id") Long id);
 
