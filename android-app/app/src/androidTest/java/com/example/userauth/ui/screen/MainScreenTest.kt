@@ -118,7 +118,7 @@ class MainScreenTest {
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
-                Text("赛事评价")
+                Text("品质评价")
             }
             
             // Button to navigate to Fruit_Nutrition_Screen (Requirement 5.3, 5.5)
@@ -128,7 +128,7 @@ class MainScreenTest {
                     .fillMaxWidth()
                     .padding(bottom = 32.dp)
             ) {
-                Text("水果营养查询")
+                Text("热带水果营养查询")
             }
             
             OutlinedButton(
@@ -159,8 +159,8 @@ class MainScreenTest {
 
         // Then - verify UI elements are displayed (Requirements 5.1, 5.2, 5.3)
         composeTestRule.onNodeWithText("Welcome, testuser!").assertIsDisplayed()
-        composeTestRule.onNodeWithText("赛事评价").assertIsDisplayed()
-        composeTestRule.onNodeWithText("水果营养查询").assertIsDisplayed()
+        composeTestRule.onNodeWithText("品质评价").assertIsDisplayed()
+        composeTestRule.onNodeWithText("热带水果营养查询").assertIsDisplayed()
         composeTestRule.onNodeWithText("Logout").assertIsDisplayed()
         
         // Administrator text should not be displayed for regular user
@@ -237,7 +237,7 @@ class MainScreenTest {
         }
 
         // When - click competition button
-        composeTestRule.onNodeWithText("赛事评价").performClick()
+        composeTestRule.onNodeWithText("品质评价").performClick()
 
         // Then - navigation callback should be called (Requirement 5.4)
         assert(navigateToCompetitionCalled)
@@ -260,7 +260,7 @@ class MainScreenTest {
         }
 
         // When - click fruit nutrition button
-        composeTestRule.onNodeWithText("水果营养查询").performClick()
+        composeTestRule.onNodeWithText("热带水果营养查询").performClick()
 
         // Then - navigation callback should be called (Requirement 5.5)
         assert(navigateToFruitNutritionCalled)
@@ -307,8 +307,8 @@ class MainScreenTest {
         }
 
         // Then - verify all buttons are enabled and clickable
-        composeTestRule.onNodeWithText("赛事评价").assertIsEnabled()
-        composeTestRule.onNodeWithText("水果营养查询").assertIsEnabled()
+        composeTestRule.onNodeWithText("品质评价").assertIsEnabled()
+        composeTestRule.onNodeWithText("热带水果营养查询").assertIsEnabled()
         composeTestRule.onNodeWithText("Logout").assertIsEnabled()
     }
 
@@ -327,12 +327,12 @@ class MainScreenTest {
         }
 
         // When - click multiple buttons in sequence
-        composeTestRule.onNodeWithText("赛事评价").performClick()
+        composeTestRule.onNodeWithText("品质评价").performClick()
         
         // Reset flags to test second button
         navigateToCompetitionCalled = false
         
-        composeTestRule.onNodeWithText("水果营养查询").performClick()
+        composeTestRule.onNodeWithText("热带水果营养查询").performClick()
 
         // Then - both navigation calls should work
         assert(navigateToFruitNutritionCalled)
@@ -357,8 +357,8 @@ class MainScreenTest {
         composeTestRule.onNodeWithText("Administrator").assertIsDisplayed()
         
         // And - verify all navigation buttons are still available
-        composeTestRule.onNodeWithText("赛事评价").assertIsDisplayed()
-        composeTestRule.onNodeWithText("水果营养查询").assertIsDisplayed()
+        composeTestRule.onNodeWithText("品质评价").assertIsDisplayed()
+        composeTestRule.onNodeWithText("热带水果营养查询").assertIsDisplayed()
         composeTestRule.onNodeWithText("Logout").assertIsDisplayed()
     }
 
@@ -400,8 +400,8 @@ class MainScreenTest {
         composeTestRule.onNodeWithText("Welcome, testuser!").assertIsDisplayed()
         
         // Navigation buttons should be in the middle
-        composeTestRule.onNodeWithText("赛事评价").assertIsDisplayed()
-        composeTestRule.onNodeWithText("水果营养查询").assertIsDisplayed()
+        composeTestRule.onNodeWithText("品质评价").assertIsDisplayed()
+        composeTestRule.onNodeWithText("热带水果营养查询").assertIsDisplayed()
         
         // Logout button should be at the bottom
         composeTestRule.onNodeWithText("Logout").assertIsDisplayed()
@@ -426,10 +426,10 @@ class MainScreenTest {
         composeTestRule.onRoot().assertIsDisplayed()
         
         // Requirement 5.2: Button to navigate to Event_Screen
-        composeTestRule.onNodeWithText("赛事评价").assertExists()
+        composeTestRule.onNodeWithText("品质评价").assertExists()
         
         // Requirement 5.3: Button to navigate to Fruit_Nutrition_Screen  
-        composeTestRule.onNodeWithText("水果营养查询").assertExists()
+        composeTestRule.onNodeWithText("热带水果营养查询").assertExists()
         
         // Requirement 5.6: Display current logged-in user's username
         composeTestRule.onNodeWithText("Welcome, testuser!").assertExists()

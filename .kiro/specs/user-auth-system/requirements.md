@@ -33,7 +33,7 @@ user-auth-system/
 - **密码哈希（Password_Hash）**: 用户密码的加密表示
 - **用户名（Username）**: 用户的唯一标识符，用于登录
 - **主界面（Main_Screen）**: 用户登录后显示的主导航界面
-- **赛事界面（Event_Screen）**: 显示赛事评价系统的功能界面
+- **赛事界面（Event_Screen）**: 显示品质评价系统的功能界面
 - **水果营养查询界面（Fruit_Nutrition_Screen）**: 显示水果营养信息查询的功能界面
 - **查询类型（Query_Type）**: 用户选择的查询维度，包括"营养成分"或"风味"
 - **营养成分（Nutrition）**: 水果中包含的营养物质信息，如热量、维生素、矿物质等
@@ -273,7 +273,7 @@ user-auth-system/
 4. WHEN 用户点击"开始评分"时，THE Android_App SHALL 显示作品评分界面
 5. THE 作品评分界面 SHALL 显示所有已审核通过的参赛作品列表
 6. THE 作品列表项 SHALL 显示作品名称、简介和参赛图片
-7. WHEN 用户选择一个作品进行评分时，THE Android_App SHALL 显示该赛事评价模型的所有评价参数
+7. WHEN 用户选择一个作品进行评分时，THE Android_App SHALL 显示该品质评价模型的所有评价参数
 8. THE 评分界面 SHALL 为每个评价参数显示参数名称和权重分值
 9. THE 评分界面 SHALL 为每个评价参数提供评分输入控件（0到参数权重分值之间）
 10. THE 评分界面 SHALL 提供评语输入框

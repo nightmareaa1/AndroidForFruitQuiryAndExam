@@ -45,7 +45,7 @@
 **API服务接口**:
 - `AuthApiService` - 认证相关
 - `FruitApiService` - 水果查询
-- `EvaluationApiService` - 赛事评价
+- `EvaluationApiService` - 品质评价
 
 **网络配置**:
 ```kotlin

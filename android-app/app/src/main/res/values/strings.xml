@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">UserAuth</string>
+    <string name="app_name">热果星选</string>
     
     <!-- Authentication -->
     <string name="username">用户名</string>
@@ -10,8 +10,8 @@
     
     <!-- Navigation -->
     <string name="main_screen">主界面</string>
-    <string name="competition_system">赛事评价系统</string>
-    <string name="fruit_nutrition">水果营养查询</string>
+    <string name="competition_system">品质评价系统</string>
+    <string name="fruit_nutrition">热带水果营养查询</string>
     <string name="admin_panel">管理员</string>
     
     <!-- Validation Messages -->

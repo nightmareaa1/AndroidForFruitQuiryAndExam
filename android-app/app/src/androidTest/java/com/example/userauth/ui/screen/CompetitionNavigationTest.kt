@@ -103,14 +103,14 @@ class CompetitionNavigationTest {
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
             ) {
-                Text("赛事评价")
+                Text("品质评价")
             }
 
             Button(
                 onClick = { /* Not tested here */ },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("水果营养查询")
+                Text("热带水果营养查询")
             }
         }
     }
@@ -142,7 +142,7 @@ class CompetitionNavigationTest {
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "赛事评价",
+                    text = "品质评价",
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -259,7 +259,7 @@ class CompetitionNavigationTest {
         }
 
         // Verify competition button exists
-        composeTestRule.onNodeWithText("赛事评价").assertIsDisplayed()
+        composeTestRule.onNodeWithText("品质评价").assertIsDisplayed()
     }
 
     @Test
@@ -273,7 +273,7 @@ class CompetitionNavigationTest {
         }
 
         // When - click competition button
-        composeTestRule.onNodeWithText("赛事评价").performClick()
+        composeTestRule.onNodeWithText("品质评价").performClick()
 
         // Then - should navigate to competition screen
         assert(currentScreen == Screen.COMPETITION)
@@ -487,7 +487,7 @@ class CompetitionNavigationTest {
         }
 
         // Step 1: Navigate from MainScreen to CompetitionScreen
-        composeTestRule.onNodeWithText("赛事评价").performClick()
+        composeTestRule.onNodeWithText("品质评价").performClick()
 
         // Verify CompetitionScreen is displayed
         composeTestRule.onNodeWithText("2026年芒果品鉴大赛").assertIsDisplayed()

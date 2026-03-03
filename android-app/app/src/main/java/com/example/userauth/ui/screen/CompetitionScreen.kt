@@ -57,7 +57,7 @@ fun CompetitionScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "赛事评价",
+                        text = "品质评价",
                         style = MaterialTheme.typography.titleLarge
                     )
                 },

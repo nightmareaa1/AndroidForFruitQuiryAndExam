@@ -31,6 +31,9 @@ public class User {
     @NotBlank(message = "Password hash cannot be blank")
     private String passwordHash;
 
+    @Column(name = "initial_password")
+    private String initialPassword;
+
     @Column(name = "is_admin", nullable = false)
     private Boolean isAdmin = false;
 
@@ -47,6 +50,7 @@ public class User {
     public User(String username, String passwordHash) {
         this.username = username;
         this.passwordHash = passwordHash;
+        this.initialPassword = null;
         this.isAdmin = false;
     }
 
@@ -54,6 +58,7 @@ public class User {
     public User(String username, String passwordHash, Boolean isAdmin) {
         this.username = username;
         this.passwordHash = passwordHash;
+        this.initialPassword = null;
         this.isAdmin = isAdmin != null ? isAdmin : false;
     }
 
@@ -80,6 +85,14 @@ public class User {
 
     public void setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+    }
+
+    public String getInitialPassword() {
+        return initialPassword;
+    }
+
+    public void setInitialPassword(String initialPassword) {
+        this.initialPassword = initialPassword;
     }
 
     public Boolean getIsAdmin() {

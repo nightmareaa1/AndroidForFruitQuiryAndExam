@@ -2,6 +2,7 @@ package com.example.userauth.service;
 
 import com.example.userauth.dto.AuthResponse;
 import com.example.userauth.dto.AdminCreateUserRequest;
+import com.example.userauth.dto.AdminUserResponse;
 import com.example.userauth.dto.LoginRequest;
 import com.example.userauth.dto.RegisterRequest;
 import com.example.userauth.dto.UserResponse;
@@ -121,6 +122,7 @@ public class UserService {
         
         // Create new user
         User user = new User(registerRequest.getUsername(), hashedPassword, false);
+        user.setInitialPassword(registerRequest.getPassword());
         
         // Save user to database
         User savedUser = userRepository.save(user);
@@ -217,13 +219,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
+    public List<AdminUserResponse> getAllUsers() {
         return userRepository.findAll().stream()
-            .map(UserResponse::fromUser)
+            .map(AdminUserResponse::fromUser)
             .collect(Collectors.toList());
     }
 
-    public UserResponse createUserByAdmin(AdminCreateUserRequest request) {
+    public AdminUserResponse createUserByAdmin(AdminCreateUserRequest request) {
         validateUsername(request.getUsername());
         validatePassword(request.getPassword());
 
@@ -233,10 +235,11 @@ public class UserService {
 
         String hashedPassword = passwordService.hashPassword(request.getPassword());
         User user = new User(request.getUsername().trim(), hashedPassword, Boolean.TRUE.equals(request.getIsAdmin()));
-        return UserResponse.fromUser(userRepository.save(user));
+        user.setInitialPassword(request.getPassword());
+        return AdminUserResponse.fromUser(userRepository.save(user));
     }
 
-    public UserResponse updateUserAdminRole(Long userId, boolean isAdmin, String currentUsername) {
+    public AdminUserResponse updateUserAdminRole(Long userId, boolean isAdmin, String currentUsername) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
@@ -249,7 +252,7 @@ public class UserService {
         }
 
         user.setIsAdmin(isAdmin);
-        return UserResponse.fromUser(userRepository.save(user));
+        return AdminUserResponse.fromUser(userRepository.save(user));
     }
 
     public void deleteUserById(Long userId, String currentUsername) {

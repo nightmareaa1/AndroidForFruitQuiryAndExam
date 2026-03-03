@@ -1391,7 +1391,7 @@ fun MainScreen(
         ) {
             item {
                 BrandFeatureCard(
-                    title = "赛事评价",
+                    title = "品质评价",
                     description = "浏览和参与水果评价赛事",
                     icon = Icons.Default.EmojiEvents,
                     gradientColors = AppColors.GradientPrimary,
@@ -1541,7 +1541,7 @@ fun CompetitionScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "赛事评价",
+                        text = "品质评价",
                         style = MaterialTheme.typography.titleLarge
                     )
                 },

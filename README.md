@@ -4,7 +4,7 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2+-green.svg)](https://spring.io/projects/spring-boot)
 [![Android](https://img.shields.io/badge/Android-API%2024+-brightgreen.svg)](https://developer.android.com/)
 
-一个完整的企业级应用，包含 **Android移动端** 和 **Spring Boot后端服务**，支持用户认证、权限管理、赛事评价（水果评测）和水果营养查询功能。
+一个完整的企业级应用，包含 **Android移动端** 和 **Spring Boot后端服务**，支持用户认证、权限管理、品质评价（水果评测）和水果营养查询功能。
 
 ## 项目概述
 
@@ -17,7 +17,7 @@
    - 基于角色的访问控制 (RBAC)
    - 密码加密存储 (BCrypt)
 
-2. **赛事评价系统**
+2. **品质评价系统**
    - 评价模型管理（指标、权重配置）
    - 赛事创建与评委分配
    - 作品提交与文件上传

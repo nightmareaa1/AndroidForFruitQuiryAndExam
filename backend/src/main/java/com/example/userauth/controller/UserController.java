@@ -1,7 +1,7 @@
 package com.example.userauth.controller;
 
 import com.example.userauth.dto.AdminCreateUserRequest;
-import com.example.userauth.dto.UserResponse;
+import com.example.userauth.dto.AdminUserResponse;
 import com.example.userauth.dto.UserRoleUpdateRequest;
 import com.example.userauth.security.RequireAdmin;
 import com.example.userauth.service.UserService;
@@ -41,11 +41,11 @@ public class UserController {
      */
     @GetMapping
     @RequireAdmin(message = "只有管理员可以查看用户列表")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
+    public ResponseEntity<List<AdminUserResponse>> getAllUsers() {
         logger.info("GET /api/users - Fetching all users");
         
         try {
-            List<UserResponse> userResponses = userService.getAllUsers();
+            List<AdminUserResponse> userResponses = userService.getAllUsers();
             
             logger.info("Successfully retrieved {} users", userResponses.size());
             return ResponseEntity.ok(userResponses);
@@ -61,7 +61,7 @@ public class UserController {
         @Valid @RequestBody AdminCreateUserRequest request
     ) {
         try {
-            UserResponse created = userService.createUserByAdmin(request);
+            AdminUserResponse created = userService.createUserByAdmin(request);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
             logger.warn("Create user failed: {}", e.getMessage());
@@ -80,7 +80,7 @@ public class UserController {
         Authentication authentication
     ) {
         try {
-            UserResponse updated = userService.updateUserAdminRole(id, Boolean.TRUE.equals(request.getIsAdmin()), authentication.getName());
+            AdminUserResponse updated = userService.updateUserAdminRole(id, Boolean.TRUE.equals(request.getIsAdmin()), authentication.getName());
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             logger.warn("Update user role failed: {}", e.getMessage());

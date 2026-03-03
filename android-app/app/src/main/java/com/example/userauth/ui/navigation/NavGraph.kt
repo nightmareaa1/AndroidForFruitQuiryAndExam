@@ -218,7 +218,7 @@ fun NavGraph(navController: NavHostController) {
                 onBack = { navController.popBackStack() }
             )
         }
-        // Competition screen (赛事评价列表)
+        // Competition screen (品质评价列表)
         composable(Screen.Competition.route) {
             CompetitionScreen(
                 onBack = { navController.popBackStack() },

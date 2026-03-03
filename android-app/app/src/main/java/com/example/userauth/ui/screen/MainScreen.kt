@@ -108,8 +108,8 @@ fun MainScreen(
         ) {
             item {
                 BrandFeatureCard(
-                    title = "赛事评价",
-                    description = "浏览和参与水果评价赛事",
+                    title = "品质评价",
+                    description = "浏览和参与热带水果评价赛事",
                     icon = Icons.Default.EmojiEvents,
                     gradientColors = GradientPrimary,
                     onClick = onNavigateToCompetition
@@ -118,8 +118,8 @@ fun MainScreen(
 
             item {
                 BrandFeatureCard(
-                    title = "水果营养查询",
-                    description = "了解各类水果的营养成分",
+                    title = "热带水果营养查询",
+                    description = "了解各类热带水果的营养成分",
                     icon = Icons.Default.Restaurant,
                     gradientColors = GradientSecondary,
                     onClick = onNavigateToFruitNutrition

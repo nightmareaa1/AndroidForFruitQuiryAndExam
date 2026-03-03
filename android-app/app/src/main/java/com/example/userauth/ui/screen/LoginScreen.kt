@@ -113,13 +113,13 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(Spacing.lg))
 
             Text(
-                text = "果评赛事",
+                text = "热果星选",
                 style = MaterialTheme.typography.headlineMedium,
                 color = Color.White
             )
 
             Text(
-                text = "水果评价赛事管理系统",
+                text = "热带水果.品质评价.营养查询",
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color.White.copy(alpha = 0.8f)
             )
